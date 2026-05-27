@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 
 const MENU_ITEMS = [
   { title: 'Chat', subtitle: 'Chat with AI', icon: 'chatbubbles', route: '/chat', color: '#6366f1' },
-  { title: 'Coder Agent', subtitle: 'Run coding tasks', icon: 'hardware-chip', route: '/agent', color: '#8b5cf6' },
+  { title: 'Coder', subtitle: 'Run coding tasks', icon: 'hardware-chip', route: '/agent', color: '#8b5cf6' },
   { title: 'History', subtitle: 'View past conversations', icon: 'time', route: '/history', color: '#06b6d4' },
   { title: 'Documentation', subtitle: 'Learn how to use', icon: 'document-text', route: '/docs', color: '#22c55e' },
   { title: 'API Settings', subtitle: 'Configure AI keys', icon: 'key', route: '/api-input', color: '#f59e0b' },

@@ -76,6 +76,12 @@ export default function CoderAgentScreen() {
     }
   };
 
+  const handleClear = () => {
+    setTaskInput('');
+    setOutput([]);
+    setStatus('idle');
+  };
+
   const statusColors: Record<Status, string> = {
     idle: '#a3a3a3',
     thinking: '#6366f1',
@@ -122,20 +128,29 @@ export default function CoderAgentScreen() {
               placeholderTextColor="#666666"
               multiline
             />
-            <TouchableOpacity
-              style={[styles.runButton, (isLoading || !isConfigured('gemini') && !isConfigured('deepseek')) && styles.runButtonDisabled]}
-              onPress={handleRunTask}
-              disabled={isLoading || (!isConfigured('gemini') && !isConfigured('deepseek'))}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#ffffff" size="small" />
-              ) : (
-                <>
-                  <Ionicons name="play" size={20} color="#ffffff" />
-                  <Text style={styles.runButtonText}>Run Task</Text>
-                </>
-              )}
-            </TouchableOpacity>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={handleClear}
+              >
+                <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                <Text style={styles.clearButtonText}>Clear</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.runButton, isLoading && styles.runButtonDisabled]}
+                onPress={handleRunTask}
+                disabled={isLoading || (!isConfigured('gemini') && !isConfigured('deepseek'))}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#ffffff" size="small" />
+                ) : (
+                  <>
+                    <Ionicons name="play" size={18} color="#ffffff" />
+                    <Text style={styles.runButtonText}>Run Task</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -144,7 +159,7 @@ export default function CoderAgentScreen() {
             <Text style={styles.sectionTitle}>Output</Text>
             <View style={styles.outputContainer}>
               {output.map((line, index) => (
-                <Text key={index} style={[styles.outputLine, line.startsWith('✓') && styles.successLine, line.startsWith('✗') && styles.errorLine]}>
+                <Text key={index} style={[styles.outputLine, line.startsWith('✓') && styles.successLine, line.startsWith('✗') && styles.errorLine, line.startsWith('>') && styles.infoLine]}>
                   {line}
                 </Text>
               ))}
@@ -152,15 +167,25 @@ export default function CoderAgentScreen() {
           </View>
         )}
 
-        <View style={styles.skillsSection}>
-          <Text style={styles.sectionTitle}>Available Skills</Text>
-          <View style={styles.skillsGrid}>
-            {['chat-skill', 'knowledge-web', 'coder-skill', 'thanking'].map((skill) => (
-              <TouchableOpacity key={skill} style={styles.skillCard}>
-                <Ionicons name="extension-puzzle" size={24} color="#6366f1" />
-                <Text style={styles.skillName}>{skill}</Text>
-              </TouchableOpacity>
-            ))}
+        <View style={styles.featuresSection}>
+          <Text style={styles.sectionTitle}>Features</Text>
+          <View style={styles.featureList}>
+            <View style={styles.featureItem}>
+              <Ionicons name="code-slash" size={20} color="#6366f1" />
+              <Text style={styles.featureText}>Write & debug code</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons name="construct" size={20} color="#8b5cf6" />
+              <Text style={styles.featureText}>Build APIs</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons name="search" size={20} color="#06b6d4" />
+              <Text style={styles.featureText}>Fix bugs</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons name="git-branch" size={20} color="#22c55e" />
+              <Text style={styles.featureText}>Code review</Text>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -181,17 +206,21 @@ const styles = StyleSheet.create({
   inputSection: { marginBottom: 24 },
   sectionTitle: { fontSize: 14, fontWeight: '600', color: '#a3a3a3', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 },
   inputContainer: { backgroundColor: '#1a1a1a', borderRadius: 12, borderWidth: 1, borderColor: '#262626', overflow: 'hidden' },
-  taskInput: { padding: 16, color: '#ffffff', fontSize: 16, minHeight: 100, textAlignVertical: 'top' },
-  runButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#6366f1', paddingVertical: 12, marginHorizontal: 16, marginBottom: 16, borderRadius: 8, gap: 8 },
+  taskInput: { padding: 16, color: '#ffffff', fontSize: 16, minHeight: 120, textAlignVertical: 'top' },
+  buttonRow: { flexDirection: 'row', padding: 16, gap: 12 },
+  runButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#6366f1', paddingVertical: 12, borderRadius: 8, gap: 8 },
   runButtonDisabled: { opacity: 0.5 },
   runButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
+  clearButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', paddingVertical: 12, paddingHorizontal: 16, borderRadius: 8, borderWidth: 1, borderColor: '#ef4444', gap: 6 },
+  clearButtonText: { color: '#ef4444', fontSize: 14, fontWeight: '600' },
   outputSection: { marginBottom: 24 },
   outputContainer: { backgroundColor: '#0a0a0a', borderRadius: 8, padding: 16, borderWidth: 1, borderColor: '#262626' },
   outputLine: { color: '#22c55e', fontSize: 14, fontFamily: 'monospace', marginBottom: 4 },
   successLine: { color: '#22c55e', fontWeight: 'bold' },
   errorLine: { color: '#ef4444', fontWeight: 'bold' },
-  skillsSection: { marginBottom: 24 },
-  skillsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  skillCard: { flex: 1, minWidth: '45%', backgroundColor: '#1a1a1a', borderRadius: 12, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: '#262626' },
-  skillName: { color: '#ffffff', fontSize: 14, marginTop: 8, textAlign: 'center' },
+  infoLine: { color: '#6366f1' },
+  featuresSection: { marginBottom: 24 },
+  featureList: { backgroundColor: '#1a1a1a', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#262626', gap: 12 },
+  featureItem: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  featureText: { color: '#ffffff', fontSize: 14 },
 });
