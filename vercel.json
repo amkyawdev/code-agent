@@ -2,10 +2,5 @@
   "buildCommand": "npx expo export:web --no-install",
   "outputDirectory": "dist",
   "installCommand": "npm install --legacy-peer-deps",
-  "devCommand": "npx expo start --web",
-  "files": [
-    "**/*",
-    "!node_modules/**",
-    "dist/**"
-  ]
+  "devCommand": "npx expo start --web"
 }
