@@ -5,12 +5,10 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { APIProvider } from '@/contexts/APIContext';
 import { ChatProvider } from '@/contexts/ChatContext';
 import { AgentProvider } from '@/contexts/AgentContext';
-import '../public/bootstrap.min.css';
-import '../public/bootstrap-icons.css';
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView className="flex-1 bg-dark">
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#0a0a0a' }}>
       <SafeAreaProvider>
         <APIProvider>
           <ChatProvider>
