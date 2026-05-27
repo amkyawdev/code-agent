@@ -1,13 +1,11 @@
 {
-  "buildCommand": "npx expo export:web",
+  "buildCommand": "npx expo export:web --no-install",
   "outputDirectory": "dist",
-  "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/"
-    }
-  ],
-  "installCommand": "npm install",
-  "devCommand": "npx expo start"
+  "installCommand": "npm install --legacy-peer-deps",
+  "devCommand": "npx expo start --web",
+  "files": [
+    "**/*",
+    "!node_modules/**",
+    "dist/**"
+  ]
 }
