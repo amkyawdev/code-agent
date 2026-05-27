@@ -1,91 +1,77 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-interface HistoryItem {
+export interface Conversation {
   id: string;
   title: string;
-  date: Date;
-  messages: number;
-  model: string;
-  preview: string;
+  type: 'chat' | 'coder';
+  messages: { role: string; content: string }[];
+  createdAt: number;
+  updatedAt: number;
 }
 
 interface HistoryContextType {
-  history: HistoryItem[];
-  addItem: (item: Omit<HistoryItem, 'id' | 'date'>) => void;
-  deleteItem: (id: string) => void;
-  clearAll: () => void;
+  conversations: Conversation[];
+  saveConversation: (conv: Omit<Conversation, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  deleteConversation: (id: string) => void;
+  getConversation: (id: string) => Conversation | undefined;
 }
 
 const HistoryContext = createContext<HistoryContextType | undefined>(undefined);
 
+const STORAGE_KEY = '@code_agent_history';
+
 export function HistoryProvider({ children }: { children: ReactNode }) {
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
 
   useEffect(() => {
     loadHistory();
   }, []);
 
-  const loadHistory = async () => {
+  const loadHistory = () => {
     try {
-      const stored = await AsyncStorage.getItem('chat_history');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setHistory(parsed.map((item: any) => ({
-          ...item,
-          date: new Date(item.date),
-        })));
-      }
-    } catch (error) {
-      console.error('Failed to load history:', error);
-    }
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) setConversations(JSON.parse(stored));
+    } catch {}
   };
 
-  const saveHistory = async (items: HistoryItem[]) => {
+  const saveHistory = (data: Conversation[]) => {
     try {
-      await AsyncStorage.setItem('chat_history', JSON.stringify(items));
-    } catch (error) {
-      console.error('Failed to save history:', error);
-    }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch {}
   };
 
-  const addItem = (item: Omit<HistoryItem, 'id' | 'date'>) => {
-    const newItem: HistoryItem = {
-      ...item,
-      id: Date.now().toString(),
-      date: new Date(),
+  const saveConversation = (conv: Omit<Conversation, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const now = Date.now();
+    const newConv: Conversation = {
+      ...conv,
+      id: now.toString(),
+      createdAt: now,
+      updatedAt: now,
     };
-    setHistory((prev) => {
-      const updated = [newItem, ...prev];
-      saveHistory(updated);
-      return updated;
-    });
+    const updated = [newConv, ...conversations].slice(0, 50); // Keep last 50
+    setConversations(updated);
+    saveHistory(updated);
   };
 
-  const deleteItem = (id: string) => {
-    setHistory((prev) => {
-      const updated = prev.filter((item) => item.id !== id);
-      saveHistory(updated);
-      return updated;
-    });
+  const deleteConversation = (id: string) => {
+    const updated = conversations.filter(c => c.id !== id);
+    setConversations(updated);
+    saveHistory(updated);
   };
 
-  const clearAll = () => {
-    setHistory([]);
-    saveHistory([]);
+  const getConversation = (id: string) => {
+    return conversations.find(c => c.id === id);
   };
 
   return (
-    <HistoryContext.Provider value={{ history, addItem, deleteItem, clearAll }}>
+    <HistoryContext.Provider value={{ conversations, saveConversation, deleteConversation, getConversation }}>
       {children}
     </HistoryContext.Provider>
   );
 }
 
-export function useHistoryContext() {
+export function useHistory() {
   const context = useContext(HistoryContext);
-  if (!context) {
-    throw new Error('useHistoryContext must be used within a HistoryProvider');
-  }
+  if (!context) throw new Error('useHistory must be used within HistoryProvider');
   return context;
 }

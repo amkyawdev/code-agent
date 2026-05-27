@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAPI } from '@/contexts/APIContext';
+import { useHistory } from '@/contexts/HistoryContext';
 
 interface Message {
   id: string;
@@ -14,14 +15,13 @@ export default function CoderScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { apiKeys, isConfigured } = useAPI();
+  const { saveConversation } = useHistory();
 
   const callAI = async (task: string) => {
     const prompt = `You are a Coder Agent like Claude, Manus, or Open Hands.
-
 Write actual code. Run commands. Fix bugs. Build projects. DO NOT test.
 
 Task: ${task}
-
 Respond with code and commands.`;
 
     if (isConfigured('gemini')) {
@@ -40,18 +40,31 @@ Respond with code and commands.`;
       const data = await res.json();
       return data.choices?.[0]?.message?.content || '';
     }
-    return 'No API key in Vercel environment.';
+    return 'No API key configured.';
   };
 
   const handleSend = async () => {
     if (!taskInput.trim() || isLoading) return;
+    
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: taskInput.trim() };
-    setMessages(prev => [...prev, userMsg]);
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
     setTaskInput('');
     setIsLoading(true);
+
     try {
       const res = await callAI(taskInput.trim());
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: res }]);
+      const allMessages = [...newMessages, { id: (Date.now() + 1).toString(), role: 'assistant' as const, content: res }];
+      setMessages(allMessages);
+
+      // Save to history
+      if (allMessages.length >= 2) {
+        saveConversation({
+          title: newMessages[0].content.slice(0, 50),
+          type: 'coder',
+          messages: allMessages.map(m => ({ role: m.role, content: m.content })),
+        });
+      }
     } catch (e: any) {
       setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: `Error: ${e.message}` }]);
     } finally {
@@ -71,9 +84,6 @@ Respond with code and commands.`;
             <Ionicons name="code-slash" size={48} color="#6366f1" />
             <Text style={styles.welcomeTitle}>Coder Agent</Text>
             <Text style={styles.welcomeText}>Like Claude, Manus, Open Hands</Text>
-            <Text style={styles.capabilities}>• Write code</Text>
-            <Text style={styles.capabilities}>• Fix bugs</Text>
-            <Text style={styles.capabilities}>• Build projects</Text>
           </View>
         )}
         {messages.map((m) => (
@@ -103,7 +113,6 @@ const styles = StyleSheet.create({
   welcome: { alignItems: 'center', paddingTop: 60 },
   welcomeTitle: { fontSize: 24, fontWeight: 'bold', color: '#fff', marginTop: 16 },
   welcomeText: { color: '#a3a3a3', fontSize: 14 },
-  capabilities: { color: '#22c55e', fontSize: 14, marginTop: 8 },
   msg: { padding: 14, borderRadius: 12, marginBottom: 12 },
   userMsg: { backgroundColor: '#6366f1', marginLeft: 40 },
   aiMsg: { backgroundColor: '#1a1a1a', marginRight: 40, borderWidth: 1, borderColor: '#262626' },

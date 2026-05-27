@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAPI } from '@/contexts/APIContext';
+import { useHistory } from '@/contexts/HistoryContext';
 
 interface Message {
   id: string;
@@ -14,6 +15,7 @@ export default function ChatScreen() {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { apiKeys, isConfigured } = useAPI();
+  const { saveConversation } = useHistory();
   const flatListRef = useRef<FlatList>(null);
 
   const callGemini = async (msg: string) => {
@@ -37,16 +39,30 @@ export default function ChatScreen() {
 
   const handleSend = async () => {
     if (!inputText.trim() || isLoading) return;
+    
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: inputText.trim() };
-    setMessages(prev => [...prev, userMsg]);
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
     setInputText('');
     setIsLoading(true);
+
     try {
       let response = '';
       if (isConfigured('gemini')) response = await callGemini(inputText.trim());
       else if (isConfigured('deepseek')) response = await callDeepSeek(inputText.trim());
-      else response = 'No API key configured in Vercel.';
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: response }]);
+      else response = 'No API key configured.';
+
+      const allMessages = [...newMessages, { id: (Date.now() + 1).toString(), role: 'assistant' as const, content: response }];
+      setMessages(allMessages);
+      
+      // Save to history
+      if (allMessages.length >= 2) {
+        saveConversation({
+          title: newMessages[0].content.slice(0, 50),
+          type: 'chat',
+          messages: allMessages.map(m => ({ role: m.role, content: m.content })),
+        });
+      }
     } catch (e: any) {
       setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: `Error: ${e.message}` }]);
     } finally {
