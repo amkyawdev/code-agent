@@ -1,4 +1,9 @@
-# Coder Skill
+---
+name: coder
+description: Use this skill whenever you need to write, read, debug, or modify code. This includes generating new code, debugging errors, explaining code, code review, refactoring, adding tests, or any programming task. Triggers when user asks to write code, sees an error, wants to understand code, or needs programming help. Not for pure design or architecture discussions without implementation - use architecture skill for that.
+---
+
+# Coder Skill - Programming Assistance Guide
 
 ## Overview
 The Coder Skill provides comprehensive coding assistance including code generation, debugging, and code review.

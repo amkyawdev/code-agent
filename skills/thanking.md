@@ -1,4 +1,9 @@
-# Deep Thinking Skill
+---
+name: thinking
+description: Use this skill when facing complex problems that require deep analysis, structured reasoning, or strategic planning. This includes architecture decisions, debugging difficult issues, multi-step problem solving, analyzing trade-offs, and planning complex features. Triggers when problem is complex, involves multiple components, requires strategic thinking, or needs step-by-step analysis.
+---
+
+# Deep Thinking Skill - Advanced Reasoning & Problem Solving
 
 ## Overview
 The Deep Thinking skill enables advanced reasoning, analysis, and problem-solving for complex tasks.

@@ -1,4 +1,9 @@
-# Knowledge Web Skill
+---
+name: knowledge-web
+description: Use this skill whenever you need to research, find, or gather information from the web. This includes searching for documentation, finding solutions to problems, gathering technical specifications, comparing products/tools, researching concepts, and synthesizing information from multiple sources. Triggers when user asks "how do I", "what is", "find information about", "compare X vs Y", or needs help with research tasks.
+---
+
+# Knowledge Web Skill - Web Research & Information Gathering
 
 ## Overview
 This skill provides comprehensive web research and information gathering capabilities.
@@ -109,3 +114,22 @@ Focus on: [specific criteria]
 2. **Provide Context**: Help understand your specific situation
 3. **Iterate**: Start broad, then refine based on initial findings
 4. **Cross-verify**: Compare information from multiple sources
+
+## Progressive Disclosure
+
+### Level 1: Quick Answer (5 min)
+- Direct answer to simple question
+- Single source
+- 1-2 paragraphs
+
+### Level 2: Standard Research (15 min)
+- Multiple sources
+- Comparison if applicable
+- Summary and recommendations
+
+### Level 3: Deep Research (30+ min)
+- Extensive sources
+- Detailed analysis
+- Comparisons and analysis
+- Future outlook
+- Comprehensive references
