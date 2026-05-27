@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "code-agent",
+    "name": "Code Agent",
     "slug": "code-agent",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
@@ -14,19 +14,30 @@
     "assetBasePath": "./assets/",
     "extra": {
       "eas": {
-        "projectId": "code-agent-project"
+        "projectId": "coder-agent-54bb7"
+      },
+      "firebase": {
+        "projectId": "coder-agent-54bb7",
+        "storageBucket": "coder-agent-54bb7.firebasestorage.app"
       }
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.amkyawdev.codeagent"
+      "bundleIdentifier": "com.amkyawdev.codeagent",
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-xxxxx~xxxxx"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0a0a0a"
       },
-      "package": "com.amkyawdev.codeagent"
+      "package": "com.amkyaw.codeagent",
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-xxxxx~xxxxx"
+      },
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/images/favicon.png",
@@ -34,7 +45,17 @@
     },
     "scheme": "codeagent",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0"
+          }
+        }
+      ]
     ]
   }
 }

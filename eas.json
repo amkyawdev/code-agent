@@ -1,7 +1,33 @@
 {
-  "install": {
-    "include": [
-      "^react-native-[^/]+$"
-    ]
+  "cli": {
+    "version": ">= 5.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./path-to-service-account.json",
+        "track": "production"
+      }
+    }
+  },
+  "project": {
+    "projectId": "coder-agent-54bb7"
   }
 }
