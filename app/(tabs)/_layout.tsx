@@ -34,7 +34,6 @@ export default function TabsLayout() {
         options={{
           title: 'Chat',
           tabBarIcon: ({ color }) => <TabBarIcon name="chatbubbles" color={color} size={24} />,
-          headerShown: false,
         }}
       />
       <Tabs.Screen
