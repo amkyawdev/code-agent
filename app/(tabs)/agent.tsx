@@ -1,18 +1,40 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAPI } from '@/contexts/APIContext';
 
-type Status = 'idle' | 'thinking' | 'coding' | 'executing' | 'complete' | 'error';
-
-export default function CoderAgentScreen() {
+export default function CoderScreen() {
   const [taskInput, setTaskInput] = useState('');
-  const [status, setStatus] = useState<Status>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
   const [output, setOutput] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { apiKeys, isConfigured } = useAPI();
 
-  const callAgentAPI = async (task: string) => {
+  const callAgent = async (task: string) => {
+    const prompt = `You are a Coder. Your job is ONLY to BUILD and FIX code. No testing.
+
+SKILL RULES:
+- Read skills/coder-skill.md for instructions
+- Write actual working code, not explanations
+- Use CLI/terminal commands for build operations
+- If error occurs, FIX it automatically
+- NEVER run tests or write test files
+- DO NOT explain theory - just build and fix
+
+TASK: ${task}
+
+Response format:
+## Commands
+(List terminal commands you run)
+
+## Code
+(Working code blocks)
+
+## Result
+(Success or errors fixed)
+
+Start now.`;
+
     if (isConfigured('gemini')) {
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeys.gemini}`,
@@ -20,13 +42,13 @@ export default function CoderAgentScreen() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: `You are a coding assistant. Complete this task: ${task}. Write actual code if needed.` }] }],
-            generationConfig: { maxOutputTokens: 4096, temperature: 0.7 }
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 8192, temperature: 0.2 }
           }),
         }
       );
       const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Task completed';
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
     } else if (isConfigured('deepseek')) {
       const response = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
@@ -36,41 +58,32 @@ export default function CoderAgentScreen() {
         },
         body: JSON.stringify({
           model: 'deepseek-chat',
-          messages: [{ role: 'user', content: `You are a coding assistant. Complete this task: ${task}. Write actual code if needed.` }],
-          max_tokens: 4096,
-          temperature: 0.7
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 8192,
+          temperature: 0.2
         }),
       });
       const data = await response.json();
-      return data.choices?.[0]?.message?.content || 'Task completed';
+      return data.choices?.[0]?.message?.content || 'No response';
     }
-    return 'Please configure Gemini or DeepSeek API key';
+    return 'Configure API key in Settings';
   };
 
-  const handleRunTask = async () => {
+  const handleRun = async () => {
     if (!taskInput.trim() || isLoading) return;
 
-    setStatus('thinking');
+    setStatus('loading');
     setOutput([]);
     setIsLoading(true);
-
-    setOutput(['> Analyzing task...', '> Planning implementation...']);
+    setOutput(['> Building...']);
 
     try {
-      setStatus('coding');
-      setOutput(prev => [...prev, '> Writing code...']);
-
-      const result = await callAgentAPI(taskInput.trim());
-
-      setStatus('executing');
-      setOutput(prev => [...prev, '> Executing...', '']);
-      setOutput(prev => [...prev, result]);
-
-      setStatus('complete');
-      setOutput(prev => [...prev, '', '✓ Task completed successfully']);
+      const result = await callAgent(taskInput.trim());
+      setOutput(result.split('\n'));
+      setStatus('done');
     } catch (error: any) {
+      setOutput([`Error: ${error.message}`]);
       setStatus('error');
-      setOutput(prev => [...prev, '', `✗ Error: ${error.message}`]);
     } finally {
       setIsLoading(false);
     }
@@ -82,111 +95,71 @@ export default function CoderAgentScreen() {
     setStatus('idle');
   };
 
-  const statusColors: Record<Status, string> = {
-    idle: '#a3a3a3',
-    thinking: '#6366f1',
-    coding: '#8b5cf6',
-    executing: '#06b6d4',
-    complete: '#22c55e',
-    error: '#ef4444',
-  };
-
-  const statusLabels: Record<Status, string> = {
-    idle: 'Ready',
-    thinking: 'Thinking...',
-    coding: 'Coding...',
-    executing: 'Executing...',
-    complete: 'Complete!',
-    error: 'Error',
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Coder Agent</Text>
-        <View style={[styles.statusBadge, { backgroundColor: statusColors[status] }]}>
-          <Text style={styles.statusText}>{statusLabels[status]}</Text>
+        <Text style={styles.headerTitle}>Coder</Text>
+        <View style={[styles.statusBadge, { backgroundColor: status === 'done' ? '#22c55e' : status === 'error' ? '#ef4444' : status === 'loading' ? '#6366f1' : '#a3a3a3' }]}>
+          <Text style={styles.statusText}>{status === 'idle' ? 'Ready' : status === 'loading' ? 'Building...' : status === 'done' ? 'Done' : 'Error'}</Text>
         </View>
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+      <ScrollView style={styles.content}>
         {!isConfigured('gemini') && !isConfigured('deepseek') && (
           <View style={styles.warningBanner}>
-            <Ionicons name="warning" size={20} color="#f59e0b" />
-            <Text style={styles.warningText}>Configure API keys in Settings to enable Coder Agent</Text>
+            <Ionicons name="warning" size={18} color="#f59e0b" />
+            <Text style={styles.warningText}>Add API key in Settings</Text>
           </View>
         )}
 
-        <View style={styles.inputSection}>
-          <Text style={styles.sectionTitle}>Task Input</Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.taskInput}
-              value={taskInput}
-              onChangeText={setTaskInput}
-              placeholder="Describe your coding task..."
-              placeholderTextColor="#666666"
-              multiline
-            />
-            <View style={styles.buttonRow}>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={handleClear}
-              >
-                <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                <Text style={styles.clearButtonText}>Clear</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.runButton, isLoading && styles.runButtonDisabled]}
-                onPress={handleRunTask}
-                disabled={isLoading || (!isConfigured('gemini') && !isConfigured('deepseek'))}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="#ffffff" size="small" />
-                ) : (
-                  <>
-                    <Ionicons name="play" size={18} color="#ffffff" />
-                    <Text style={styles.runButtonText}>Run Task</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={taskInput}
+            onChangeText={setTaskInput}
+            placeholder="What to build or fix..."
+            placeholderTextColor="#666666"
+            multiline
+          />
+        </View>
+
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={styles.clearBtn} onPress={handleClear}>
+            <Ionicons name="trash" size={16} color="#ef4444" />
+            <Text style={styles.clearText}>Clear</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.runBtn, isLoading && styles.disabled]}
+            onPress={handleRun}
+            disabled={isLoading}
+          >
+            {isLoading ? <ActivityIndicator color="#fff" size="small" /> : (
+              <>
+                <Ionicons name="build" size={16} color="#fff" />
+                <Text style={styles.runText}>Build</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
 
         {output.length > 0 && (
-          <View style={styles.outputSection}>
-            <Text style={styles.sectionTitle}>Output</Text>
-            <View style={styles.outputContainer}>
-              {output.map((line, index) => (
-                <Text key={index} style={[styles.outputLine, line.startsWith('✓') && styles.successLine, line.startsWith('✗') && styles.errorLine, line.startsWith('>') && styles.infoLine]}>
-                  {line}
-                </Text>
-              ))}
-            </View>
+          <View style={styles.outputBox}>
+            <Text style={styles.outputTitle}>Output</Text>
+            {output.map((line, i) => (
+              <Text key={i} style={[
+                styles.outputLine,
+                line.startsWith('##') && styles.heading,
+                line.startsWith('```') && styles.code,
+                line.includes('Error') && styles.error,
+                line.includes('✓') && styles.success
+              ]}>{line}</Text>
+            ))}
           </View>
         )}
 
-        <View style={styles.featuresSection}>
-          <Text style={styles.sectionTitle}>Features</Text>
-          <View style={styles.featureList}>
-            <View style={styles.featureItem}>
-              <Ionicons name="code-slash" size={20} color="#6366f1" />
-              <Text style={styles.featureText}>Write & debug code</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="construct" size={20} color="#8b5cf6" />
-              <Text style={styles.featureText}>Build APIs</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="search" size={20} color="#06b6d4" />
-              <Text style={styles.featureText}>Fix bugs</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="git-branch" size={20} color="#22c55e" />
-              <Text style={styles.featureText}>Code review</Text>
-            </View>
-          </View>
+        <View style={styles.infoBox}>
+          <Ionicons name="information-circle" size={16} color="#6366f1" />
+          <Text style={styles.infoText}>Build & Fix Only - No Testing</Text>
         </View>
       </ScrollView>
     </View>
@@ -195,32 +168,28 @@ export default function CoderAgentScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#262626' },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#ffffff' },
-  statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
-  statusText: { color: '#ffffff', fontSize: 12, fontWeight: '600' },
-  content: { flex: 1 },
-  contentContainer: { padding: 16 },
-  warningBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(245, 158, 11, 0.1)', padding: 12, borderRadius: 8, marginBottom: 16, gap: 8 },
-  warningText: { color: '#f59e0b', fontSize: 14 },
-  inputSection: { marginBottom: 24 },
-  sectionTitle: { fontSize: 14, fontWeight: '600', color: '#a3a3a3', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 },
-  inputContainer: { backgroundColor: '#1a1a1a', borderRadius: 12, borderWidth: 1, borderColor: '#262626', overflow: 'hidden' },
-  taskInput: { padding: 16, color: '#ffffff', fontSize: 16, minHeight: 120, textAlignVertical: 'top' },
-  buttonRow: { flexDirection: 'row', padding: 16, gap: 12 },
-  runButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#6366f1', paddingVertical: 12, borderRadius: 8, gap: 8 },
-  runButtonDisabled: { opacity: 0.5 },
-  runButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
-  clearButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', paddingVertical: 12, paddingHorizontal: 16, borderRadius: 8, borderWidth: 1, borderColor: '#ef4444', gap: 6 },
-  clearButtonText: { color: '#ef4444', fontSize: 14, fontWeight: '600' },
-  outputSection: { marginBottom: 24 },
-  outputContainer: { backgroundColor: '#0a0a0a', borderRadius: 8, padding: 16, borderWidth: 1, borderColor: '#262626' },
-  outputLine: { color: '#22c55e', fontSize: 14, fontFamily: 'monospace', marginBottom: 4 },
-  successLine: { color: '#22c55e', fontWeight: 'bold' },
-  errorLine: { color: '#ef4444', fontWeight: 'bold' },
-  infoLine: { color: '#6366f1' },
-  featuresSection: { marginBottom: 24 },
-  featureList: { backgroundColor: '#1a1a1a', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#262626', gap: 12 },
-  featureItem: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  featureText: { color: '#ffffff', fontSize: 14 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderBottomWidth: 1, borderBottomColor: '#262626' },
+  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
+  statusBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10 },
+  statusText: { color: '#fff', fontSize: 11, fontWeight: '600' },
+  content: { flex: 1, padding: 16 },
+  warningBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(245,158,11,0.1)', padding: 10, borderRadius: 8, marginBottom: 16 },
+  warningText: { color: '#f59e0b', fontSize: 13 },
+  inputContainer: { backgroundColor: '#1a1a1a', borderRadius: 12, borderWidth: 1, borderColor: '#262626', marginBottom: 12 },
+  input: { padding: 14, color: '#fff', fontSize: 15, minHeight: 100, textAlignVertical: 'top' },
+  buttonRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  clearBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#ef4444', gap: 6, flex: 1 },
+  clearText: { color: '#ef4444', fontSize: 14, fontWeight: '600' },
+  runBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#6366f1', padding: 12, borderRadius: 8, gap: 8, flex: 2 },
+  runText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  disabled: { opacity: 0.5 },
+  outputBox: { backgroundColor: '#0a0a0a', borderRadius: 8, padding: 14, borderWidth: 1, borderColor: '#262626', marginBottom: 16 },
+  outputTitle: { color: '#a3a3a3', fontSize: 12, fontWeight: '600', marginBottom: 10, textTransform: 'uppercase' },
+  outputLine: { color: '#22c55e', fontSize: 12, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', marginBottom: 2, lineHeight: 18 },
+  heading: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+  code: { color: '#8b5cf6' },
+  error: { color: '#ef4444' },
+  success: { color: '#22c55e', fontWeight: 'bold' },
+  infoBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(99,102,241,0.1)', padding: 10, borderRadius: 8 },
+  infoText: { color: '#a3a3a3', fontSize: 12 },
 });
