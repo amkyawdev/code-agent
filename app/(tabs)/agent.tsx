@@ -20,10 +20,10 @@ export default function CoderScreen() {
   const { saveConversation } = useHistory();
 
   const callAI = async (task: string) => {
-    const prompt = `You are a Coder Agent like Claude, Manus, or Open Hands.
-Write actual code. Run commands. Fix bugs. Build projects. DO NOT test.
+    const prompt = `You are a Coder Agent. Write actual code. Fix bugs. Build projects. DO NOT test.
 
 Task: ${task}
+
 Respond with code and commands.`;
 
     if (isConfigured('gemini')) {
@@ -42,7 +42,7 @@ Respond with code and commands.`;
       const data = await res.json();
       return data.choices?.[0]?.message?.content || '';
     }
-    return 'No API key configured.';
+    return 'Add API key in Settings.';
   };
 
   const handleSend = async () => {
@@ -52,7 +52,6 @@ Respond with code and commands.`;
     setMessages(newMessages);
     setTaskInput('');
     setIsLoading(true);
-
     try {
       const res = await callAI(taskInput.trim());
       const allMessages = [...newMessages, { id: (Date.now() + 1).toString(), role: 'assistant' as const, content: res }];
@@ -76,22 +75,32 @@ Respond with code and commands.`;
       <MenuBar />
       <ScrollView style={styles.chatArea} contentContainerStyle={styles.chatContent}>
         {messages.length === 0 && (
-          <View style={styles.welcome}>
-            <Ionicons name="code-slash" size={48} color="#6366f1" />
-            <Text style={styles.welcomeTitle}>Coder Agent</Text>
-            <Text style={styles.welcomeText}>Like Claude, Manus, Open Hands</Text>
+          <View style={styles.empty}>
+            <View style={styles.emptyIcon}>
+              <Ionicons name="code-slash" size={36} color="#222" />
+            </View>
+            <Text style={styles.emptyText}>Coder Agent</Text>
+            <Text style={styles.emptySubtext}>Describe what to build or fix</Text>
           </View>
         )}
         {messages.map((m) => (
           <View key={m.id} style={[styles.msg, m.role === 'user' ? styles.userMsg : styles.aiMsg]}>
-            <Text style={styles.msgText}>{m.content}</Text>
+            <View style={[styles.msgBubble, m.role === 'user' ? styles.userBubble : styles.aiBubble]}>
+              <Text style={styles.msgText}>{m.content}</Text>
+            </View>
           </View>
         ))}
-        {isLoading && <View style={[styles.msg, styles.aiMsg]}><Text style={styles.msgText}>Thinking...</Text></View>}
+        {isLoading && (
+          <View style={[styles.msg, styles.aiMsg]}>
+            <View style={[styles.msgBubble, styles.aiBubble]}>
+              <Text style={styles.msgText}>Thinking...</Text>
+            </View>
+          </View>
+        )}
       </ScrollView>
       <View style={styles.inputArea}>
-        <TextInput style={styles.input} value={taskInput} onChangeText={setTaskInput} placeholder="What to build..." placeholderTextColor="#666" multiline />
-        <TouchableOpacity style={styles.sendBtn} onPress={handleSend} disabled={isLoading}>
+        <TextInput style={styles.input} value={taskInput} onChangeText={setTaskInput} placeholder="What to build..." placeholderTextColor="#555" multiline maxLength={1000} />
+        <TouchableOpacity style={[styles.sendBtn, (!taskInput.trim() || isLoading) && styles.sendBtnDisabled]} onPress={handleSend} disabled={!taskInput.trim() || isLoading}>
           <Ionicons name="send" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -103,15 +112,20 @@ Respond with code and commands.`;
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
   chatArea: { flex: 1 },
-  chatContent: { padding: 16, paddingTop: 70, paddingBottom: 100 },
-  welcome: { alignItems: 'center', paddingTop: 60 },
-  welcomeTitle: { fontSize: 24, fontWeight: 'bold', color: '#fff', marginTop: 16 },
-  welcomeText: { color: '#a3a3a3', fontSize: 14 },
-  msg: { padding: 14, borderRadius: 12, marginBottom: 12 },
-  userMsg: { backgroundColor: '#6366f1', marginLeft: 40 },
-  aiMsg: { backgroundColor: '#1a1a1a', marginRight: 40, borderWidth: 1, borderColor: '#262626' },
-  msgText: { color: '#fff', fontSize: 14, lineHeight: 22 },
-  inputArea: { flexDirection: 'row', alignItems: 'center', padding: 12, backgroundColor: '#1a1a1a', borderTopWidth: 1, borderTopColor: '#262626', gap: 8 },
-  input: { flex: 1, backgroundColor: '#0a0a0a', padding: 12, borderRadius: 20, color: '#fff', fontSize: 15, maxHeight: 80 },
-  sendBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#6366f1', justifyContent: 'center', alignItems: 'center' },
+  chatContent: { padding: 16, paddingTop: 70, paddingBottom: 20 },
+  empty: { alignItems: 'center', marginTop: 80 },
+  emptyIcon: { width: 72, height: 72, borderRadius: 20, backgroundColor: '#141414', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  emptyText: { color: '#555', fontSize: 16, fontWeight: '600' },
+  emptySubtext: { color: '#333', fontSize: 13, marginTop: 6 },
+  msg: { marginBottom: 14 },
+  userMsg: { alignItems: 'flex-end' },
+  aiMsg: { alignItems: 'flex-start' },
+  msgBubble: { maxWidth: '85%:', padding: 14, borderRadius: 18 },
+  userBubble: { backgroundColor: '#6366f1', borderBottomRightRadius: 6 },
+  aiBubble: { backgroundColor: '#141414', borderWidth: 1, borderColor: '#1f1f1f', borderBottomLeftRadius: 6 },
+  msgText: { color: '#fff', fontSize: 15, lineHeight: 22 },
+  inputArea: { flexDirection: 'row', alignItems: 'flex-end', padding: 14, backgroundColor: '#0a0a0a', borderTopWidth: 1, borderTopColor: '#141414', gap: 10 },
+  input: { flex: 1, backgroundColor: '#141414', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20, color: '#fff', fontSize: 15, maxHeight: 100, borderWidth: 1, borderColor: '#1f1f1f' },
+  sendBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#6366f1', justifyContent: 'center', alignItems: 'center' },
+  sendBtnDisabled: { backgroundColor: '#333' },
 });

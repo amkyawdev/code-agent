@@ -22,7 +22,7 @@ export default function HistoryScreen() {
   const handleDelete = (id: string) => {
     Alert.alert('Delete', 'Delete this conversation?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteConversation(id) }
+      { text: 'Delete', style: 'destructive', onPress: () => deleteConversation(id) },
     ]);
   };
 
@@ -35,11 +35,12 @@ export default function HistoryScreen() {
         <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
         <View style={styles.itemMeta}>
           <Text style={styles.itemDate}>{formatDate(item.createdAt)}</Text>
-          <Text style={styles.itemMsgs}>{item.messages.length} msgs</Text>
+          <View style={styles.dot} />
+          <Text style={styles.itemMsgs}>{item.messages.length} messages</Text>
         </View>
       </View>
       <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item.id)}>
-        <Ionicons name="trash-outline" size={18} color="#ef4444" />
+        <Ionicons name="trash-outline" size={18} color="#444" />
       </TouchableOpacity>
     </View>
   );
@@ -54,9 +55,11 @@ export default function HistoryScreen() {
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="time-outline" size={48} color="#262626" />
+            <View style={styles.emptyIcon}>
+              <Ionicons name="time-outline" size={36} color="#222" />
+            </View>
             <Text style={styles.emptyText}>No conversations yet</Text>
-            <Text style={styles.emptySubtext}>Start chatting to see history</Text>
+            <Text style={styles.emptySubtext}>Start chatting to see history here</Text>
           </View>
         }
       />
@@ -67,16 +70,35 @@ export default function HistoryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
-  list: { padding: 16, paddingTop: 70, paddingBottom: 100 },
-  empty: { alignItems: 'center', marginTop: 100 },
-  emptyText: { color: '#666', fontSize: 16, marginTop: 12 },
-  emptySubtext: { color: '#444', fontSize: 13, marginTop: 4 },
-  item: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1a1a1a', padding: 14, borderRadius: 12, marginBottom: 10, borderWidth: 1, borderColor: '#262626' },
-  itemIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#262626', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  list: { padding: 16, paddingTop: 70, paddingBottom: 20 },
+  empty: { alignItems: 'center', marginTop: 80 },
+  emptyIcon: { width: 72, height: 72, borderRadius: 20, backgroundColor: '#141414', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  emptyText: { color: '#555', fontSize: 16, fontWeight: '600' },
+  emptySubtext: { color: '#333', fontSize: 13, marginTop: 6 },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#111111',
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#1a1a1a',
+  },
+  itemIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#141414',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
   itemContent: { flex: 1 },
-  itemTitle: { color: '#fff', fontSize: 15, fontWeight: '500' },
-  itemMeta: { flexDirection: 'row', gap: 12, marginTop: 4 },
+  itemTitle: { color: '#fff', fontSize: 15, fontWeight: '500', marginBottom: 6 },
+  itemMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   itemDate: { color: '#666', fontSize: 12 },
+  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#333' },
   itemMsgs: { color: '#666', fontSize: 12 },
   deleteBtn: { padding: 8 },
 });

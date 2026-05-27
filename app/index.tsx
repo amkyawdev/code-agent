@@ -7,10 +7,10 @@ import MenuBar from '@/components/MenuBar';
 import NavBar from '@/components/NavBar';
 
 const pages = [
-  { name: 'Chat', path: '/chat', icon: 'chatbubbles', desc: 'AI chat', color: '#6366f1' },
+  { name: 'Chat', path: '/chat', icon: 'chatbubbles', desc: 'AI chat assistant', color: '#6366f1' },
   { name: 'Coder', path: '/agent', icon: 'code-slash', desc: 'Build & fix code', color: '#8b5cf6' },
   { name: 'History', path: '/history', icon: 'time', desc: 'Past conversations', color: '#06b6d4' },
-  { name: 'Docs', path: '/docs', icon: 'document-text', desc: 'Documentation', color: '#22c55e' },
+  { name: 'Docs', path: '/docs', icon: 'document-text', desc: 'Browse documentation', color: '#22c55e' },
   { name: 'API', path: '/api-input', icon: 'key', desc: 'Configure keys', color: '#f59e0b' },
 ];
 
@@ -21,21 +21,28 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <MenuBar />
-      <ScrollView style={styles.content} contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top }]}>
+      <ScrollView style={styles.content} contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + 80 }]}>
         <View style={styles.hero}>
-          <Ionicons name="code-slash" size={48} color="#6366f1" />
+          <View style={styles.heroIcon}>
+            <Ionicons name="code-slash" size={40} color="#6366f1" />
+          </View>
           <Text style={styles.title}>Code Agent</Text>
           <Text style={styles.subtitle}>AI-powered development assistant</Text>
         </View>
 
         <View style={styles.grid}>
           {pages.map((page) => (
-            <TouchableOpacity key={page.path} style={styles.card} onPress={() => router.push(page.path)}>
-              <View style={[styles.iconBox, { backgroundColor: page.color }]}>
-                <Ionicons name={page.icon as any} size={24} color="#fff" />
+            <TouchableOpacity key={page.path} style={styles.card} onPress={() => router.push(page.path)} activeOpacity={0.7}>
+              <View style={[styles.iconBox, { backgroundColor: page.color + '20' }]}>
+                <View style={[styles.iconInner, { backgroundColor: page.color }]}>
+                  <Ionicons name={page.icon as any} size={22} color="#fff" />
+                </View>
               </View>
-              <Text style={styles.cardName}>{page.name}</Text>
-              <Text style={styles.cardDesc}>{page.desc}</Text>
+              <View style={styles.cardText}>
+                <Text style={styles.cardName}>{page.name}</Text>
+                <Text style={styles.cardDesc}>{page.desc}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#333" />
             </TouchableOpacity>
           ))}
         </View>
@@ -48,13 +55,33 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
   content: { flex: 1 },
-  contentContainer: { padding: 16, paddingBottom: 100 },
-  hero: { alignItems: 'center', paddingVertical: 40 },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#fff', marginTop: 16 },
-  subtitle: { fontSize: 14, color: '#a3a3a3', marginTop: 4 },
+  contentContainer: { padding: 20 },
+  hero: { alignItems: 'center', paddingVertical: 48 },
+  heroIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    backgroundColor: '#141414',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  title: { fontSize: 28, fontWeight: '700', color: '#fff', letterSpacing: 0.5 },
+  subtitle: { fontSize: 14, color: '#666', marginTop: 8 },
   grid: { gap: 12 },
-  card: { backgroundColor: '#1a1a1a', borderRadius: 16, padding: 20, marginBottom: 12, borderWidth: 1, borderColor: '#262626', flexDirection: 'row', alignItems: 'center' },
-  iconBox: { width: 48, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  cardName: { fontSize: 17, fontWeight: '600', color: '#fff', marginLeft: 16, flex: 1 },
-  cardDesc: { fontSize: 12, color: '#666', marginLeft: 16 },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#111111',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#1a1a1a',
+    marginBottom: 12,
+  },
+  iconBox: { width: 56, height: 56, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+  iconInner: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  cardText: { flex: 1 },
+  cardName: { fontSize: 17, fontWeight: '600', color: '#fff', marginBottom: 4 },
+  cardDesc: { fontSize: 13, color: '#666' },
 });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -13,41 +13,35 @@ const menuItems = [
 ];
 
 export default function MenuBar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
-  const isActive = (path: string) => {
-    if (path === '/') return pathname === '/';
-    return pathname.startsWith(path);
-  };
+  const isActive = (path: string) => path === '/' ? pathname === '/' : pathname.startsWith(path);
 
   const navigate = (path: string) => {
-    setIsOpen(false);
+    setVisible(false);
     router.push(path);
   };
 
   return (
     <>
-      {/* Header Bar */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.menuBtn} onPress={() => setIsOpen(true)}>
-          <Ionicons name="menu" size={24} color="#fff" />
+        <TouchableOpacity style={styles.menuBtn} onPress={() => setVisible(true)}>
+          <Ionicons name="menu-outline" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Code Agent</Text>
         <View style={styles.headerRight} />
       </View>
 
-      {/* Sidebar Menu */}
-      <Modal visible={isOpen} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <Pressable style={styles.overlay} onPress={() => setIsOpen(false)} />
-          <View style={styles.sidebar}>
+      <Modal visible={visible} animationType="fade" transparent>
+        <View style={styles.overlay}>
+          <Animated.View style={styles.sidebar}>
             <View style={styles.sidebarHeader}>
-              <Ionicons name="code-slash" size={28} color="#6366f1" />
+              <Ionicons name="code-slash" size={32} color="#6366f1" />
               <Text style={styles.sidebarTitle}>Menu</Text>
-              <TouchableOpacity style={styles.closeBtn} onPress={() => setIsOpen(false)}>
-                <Ionicons name="close" size={24} color="#fff" />
+              <TouchableOpacity style={styles.closeBtn} onPress={() => setVisible(false)}>
+                <Ionicons name="close" size={22} color="#888" />
               </TouchableOpacity>
             </View>
 
@@ -58,23 +52,19 @@ export default function MenuBar() {
                   style={[styles.menuItem, isActive(item.path) && styles.menuItemActive]}
                   onPress={() => navigate(item.path)}
                 >
-                  <Ionicons
-                    name={item.icon as any}
-                    size={22}
-                    color={isActive(item.path) ? '#6366f1' : '#a3a3a3'}
-                  />
-                  <Text style={[styles.menuText, isActive(item.path) && styles.menuTextActive]}>
-                    {item.name}
-                  </Text>
-                  {isActive(item.path) && <View style={styles.activeBar} />}
+                  <View style={[styles.iconCircle, isActive(item.path) && styles.iconCircleActive]}>
+                    <Ionicons name={item.icon as any} size={20} color={isActive(item.path) ? '#6366f1' : '#666'} />
+                  </View>
+                  <Text style={[styles.menuText, isActive(item.path) && styles.menuTextActive]}>{item.name}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
             <View style={styles.sidebarFooter}>
-              <Text style={styles.footerText}>Code Agent v1.0</Text>
+              <Text style={styles.version}>v1.0.0</Text>
             </View>
-          </View>
+          </Animated.View>
+          <TouchableOpacity style={styles.overlayBg} onPress={() => setVisible(false)} />
         </View>
       </Modal>
     </>
@@ -87,104 +77,76 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     backgroundColor: '#0a0a0a',
     borderBottomWidth: 1,
-    borderBottomColor: '#262626',
+    borderBottomColor: '#161616',
   },
   menuBtn: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#141414',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: '#fff', letterSpacing: 0.5 },
+  headerRight: { width: 44 },
+  overlay: { flex: 1, flexDirection: 'row' },
+  overlayBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)' },
+  sidebar: {
+    width: 260,
+    backgroundColor: '#111111',
+    borderRightWidth: 1,
+    borderRightColor: '#1f1f1f',
+  },
+  sidebarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1a1a1a',
+    gap: 14,
+  },
+  sidebarTitle: { fontSize: 20, fontWeight: '700', color: '#fff', flex: 1 },
+  closeBtn: {
+    width: 36,
+    height: 36,
     borderRadius: 10,
     backgroundColor: '#1a1a1a',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  headerRight: {
-    width: 40,
-  },
-  modalOverlay: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  sidebar: {
-    width: 280,
-    backgroundColor: '#1a1a1a',
-    borderLeftWidth: 1,
-    borderLeftColor: '#262626',
-  },
-  sidebarHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#262626',
-    gap: 12,
-  },
-  sidebarTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    flex: 1,
-  },
-  closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#262626',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  menuList: {
-    padding: 12,
-  },
+  menuList: { padding: 16 },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 6,
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 8,
     gap: 14,
   },
-  menuItemActive: {
-    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+  menuItemActive: { backgroundColor: '#1a1a1a' },
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#1a1a1a',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  menuText: {
-    fontSize: 16,
-    color: '#a3a3a3',
-    flex: 1,
-  },
-  menuTextActive: {
-    color: '#6366f1',
-    fontWeight: '600',
-  },
-  activeBar: {
-    width: 4,
-    height: 20,
-    borderRadius: 2,
-    backgroundColor: '#6366f1',
-  },
+  iconCircleActive: { backgroundColor: '#222222' },
+  menuText: { fontSize: 15, color: '#888', flex: 1 },
+  menuTextActive: { color: '#fff', fontWeight: '600' },
   sidebarFooter: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 24,
     left: 0,
     right: 0,
-    padding: 20,
+    padding: 24,
     borderTopWidth: 1,
-    borderTopColor: '#262626',
+    borderTopColor: '#1a1a1a',
+    alignItems: 'center',
   },
-  footerText: {
-    color: '#666',
-    fontSize: 12,
-    textAlign: 'center',
-  },
+  version: { color: '#444', fontSize: 12 },
 });
