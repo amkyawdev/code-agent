@@ -72,8 +72,10 @@ export default function DocsScreen() {
               <View style={styles.docIcon}>
                 <Ionicons name={doc.icon as any} size={28} color="#6366f1" />
               </View>
-              <Text style={styles.docTitle}>{doc.title}</Text>
-              <Text style={styles.docDescription}>{doc.description}</Text>
+              <View style={styles.docTextContainer}>
+                <Text style={styles.docTitle}>{doc.title}</Text>
+                <Text style={styles.docDescription}>{doc.description}</Text>
+              </View>
               <Ionicons name="chevron-forward" size={20} color="#666666" />
             </TouchableOpacity>
           ))}
@@ -172,12 +174,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ffffff',
   },
+  docTextContainer: {
+    flex: 1,
+  },
   docDescription: {
-    position: 'absolute',
-    left: 76,
-    top: 36,
     fontSize: 12,
     color: '#666666',
+    marginTop: 2,
   },
   sectionTitle: {
     fontSize: 14,
