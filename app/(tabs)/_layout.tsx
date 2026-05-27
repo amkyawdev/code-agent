@@ -1,0 +1,68 @@
+import { Tabs } from 'expo-router';
+import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+
+function TabBarIcon({ name, color, size }: { name: string; color: string; size: number }) {
+  return <Ionicons name={name as any} size={size} color={color} />;
+}
+
+export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: '#6366f1',
+        tabBarInactiveTintColor: '#a3a3a3',
+        tabBarStyle: {
+          backgroundColor: '#1a1a1a',
+          borderTopColor: '#262626',
+          borderTopWidth: 1,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
+          paddingTop: 10,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
+        },
+        headerStyle: {
+          backgroundColor: '#0a0a0a',
+        },
+        headerTintColor: '#ffffff',
+        headerShadowVisible: false,
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} size={24} />,
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: 'Chat',
+          tabBarIcon: ({ color }) => <TabBarIcon name="chatbubbles" color={color} size={24} />,
+        }}
+      />
+      <Tabs.Screen
+        name="agent"
+        options={{
+          title: 'Agent',
+          tabBarIcon: ({ color }) => <TabBarIcon name="hardware-chip" color={color} size={24} />,
+        }}
+      />
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: 'History',
+          tabBarIcon: ({ color }) => <TabBarIcon name="time" color={color} size={24} />,
+        }}
+      />
+    </Tabs>
+  );
+}

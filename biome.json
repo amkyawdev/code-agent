@@ -1,0 +1,13 @@
+{
+  "biome": {
+    "organizeImports": {
+      "enabled": true
+    },
+    "lint": {
+      "enabled": true,
+      "rules": {
+        "recommended": true
+      }
+    }
+  }
+}

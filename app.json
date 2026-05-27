@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "code-agent",
+    "slug": "code-agent",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0a0a"
+    },
+    "assetBasePath": "./assets/",
+    "extra": {
+      "eas": {
+        "projectId": "code-agent-project"
+      }
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.amkyawdev.codeagent"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#0a0a0a"
+      },
+      "package": "com.amkyawdev.codeagent"
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro"
+    },
+    "scheme": "codeagent",
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

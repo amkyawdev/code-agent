@@ -1,0 +1,23 @@
+{
+  "env": {
+    "GEMINI_API_KEY": "your-gemini-api-key",
+    "OPENAI_API_KEY": "your-openai-api-key",
+    "PERPLEXITY_API_KEY": "your-perplexity-api-key",
+    "DEEPSEEK_API_KEY": "your-deepseek-api-key"
+  },
+  "runtime": {
+    "node": "18",
+    "platform": ["android", "ios", "web"]
+  },
+  "build": {
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#0a0a0a"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.amkyawdev.codeagent"
+    }
+  }
+}
