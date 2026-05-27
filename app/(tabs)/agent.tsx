@@ -2,14 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import AgentStatus from '@/components/agent/AgentStatus';
-import ThinkingAnimation from '@/components/agent/ThinkingAnimation';
-import CLIOutput from '@/components/agent/CLIOutput';
-import { useAgent } from '@/hooks/useAgent';
+import { useAgentContext } from '@/contexts/AgentContext';
 
 export default function AgentScreen() {
   const insets = useSafeAreaInsets();
-  const { status, isThinking, output, runTask } = useAgent();
+  const { status, isThinking, output, runTask } = useAgentContext();
   const [taskInput, setTaskInput] = useState('');
 
   const handleRunTask = () => {
@@ -28,18 +25,25 @@ export default function AgentScreen() {
     error: '#ef4444',
   };
 
+  const statusLabels: Record<string, string> = {
+    idle: 'Ready',
+    thinking: 'Thinking...',
+    coding: 'Coding...',
+    executing: 'Executing...',
+    complete: 'Complete!',
+    error: 'Error',
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Code Agent</Text>
-        <TouchableOpacity style={styles.refreshButton}>
-          <Ionicons name="refresh" size={20} color="#ffffff" />
-        </TouchableOpacity>
+        <View style={[styles.statusBadge, { backgroundColor: statusColors[status] }]}>
+          <Text style={styles.statusText}>{statusLabels[status]}</Text>
+        </View>
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        <AgentStatus status={status} color={statusColors[status]} />
-        
         <View style={styles.inputSection}>
           <Text style={styles.sectionTitle}>Task Input</Text>
           <View style={styles.inputContainer}>
@@ -52,33 +56,35 @@ export default function AgentScreen() {
               multiline
               numberOfLines={4}
             />
-            <TouchableOpacity 
-              style={styles.runButton}
+            <TouchableOpacity
+              style={[styles.runButton, isThinking && styles.runButtonDisabled]}
               onPress={handleRunTask}
               disabled={isThinking}
             >
               <Ionicons name="play" size={20} color="#ffffff" />
-              <Text style={styles.runButtonText}>Run</Text>
+              <Text style={styles.runButtonText}>{isThinking ? 'Running...' : 'Run Task'}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {isThinking && <ThinkingAnimation />}
-
         {output.length > 0 && (
           <View style={styles.outputSection}>
             <Text style={styles.sectionTitle}>Output</Text>
-            <CLIOutput lines={output} />
+            <View style={styles.outputContainer}>
+              {output.map((line, index) => (
+                <Text key={index} style={styles.outputLine}>{line}</Text>
+              ))}
+            </View>
           </View>
         )}
 
         <View style={styles.skillsSection}>
           <Text style={styles.sectionTitle}>Available Skills</Text>
           <View style={styles.skillsGrid}>
-            {['chat-skill.md', 'knowledge-web.md', 'coder-skill.md', 'thanking.md'].map((skill) => (
+            {['chat-skill', 'knowledge-web', 'coder-skill', 'thanking'].map((skill) => (
               <TouchableOpacity key={skill} style={styles.skillCard}>
-                <Ionicons name="document-text" size={24} color="#6366f1" />
-                <Text style={styles.skillName}>{skill.replace('.md', '')}</Text>
+                <Ionicons name="extension-puzzle" size={24} color="#6366f1" />
+                <Text style={styles.skillName}>{skill}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -107,13 +113,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#ffffff',
   },
-  refreshButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#262626',
-    justifyContent: 'center',
-    alignItems: 'center',
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   content: {
     flex: 1,
@@ -157,6 +165,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: 8,
   },
+  runButtonDisabled: {
+    opacity: 0.5,
+  },
   runButtonText: {
     color: '#ffffff',
     fontSize: 16,
@@ -164,6 +175,19 @@ const styles = StyleSheet.create({
   },
   outputSection: {
     marginBottom: 24,
+  },
+  outputContainer: {
+    backgroundColor: '#0a0a0a',
+    borderRadius: 8,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#262626',
+  },
+  outputLine: {
+    color: '#22c55e',
+    fontSize: 14,
+    fontFamily: 'monospace',
+    marginBottom: 4,
   },
   skillsSection: {
     marginBottom: 24,
