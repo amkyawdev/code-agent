@@ -39,7 +39,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="agent"
         options={{
-          title: 'Agent',
+          title: 'Coder Agent',
           tabBarIcon: ({ color }) => <TabBarIcon name="hardware-chip" color={color} size={24} />,
         }}
       />
