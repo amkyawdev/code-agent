@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 
-export function useChatLoader() {
+export function useChat() {
   const [isLoading, setIsLoading] = useState(false);
 
   return {
@@ -9,4 +9,4 @@ export function useChatLoader() {
   };
 }
 
-export default useChatLoader;
+export default useChat;

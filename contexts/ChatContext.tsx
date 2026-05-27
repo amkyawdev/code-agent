@@ -32,7 +32,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setMessages((prev) => [...prev, userMessage]);
     setIsThinking(true);
 
-    // Simulate AI response (replace with actual API call)
     setTimeout(() => {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -56,10 +55,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useChat() {
+export function useChatContext() {
   const context = useContext(ChatContext);
   if (!context) {
-    throw new Error('useChat must be used within a ChatProvider');
+    throw new Error('useChatContext must be used within a ChatProvider');
   }
   return context;
 }
