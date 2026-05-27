@@ -1,10 +1,12 @@
-import { useAgentContext } from '@/contexts/AgentContext';
+import { useState } from 'react';
 
-export function useAgent() {
-  const context = useAgentContext();
-  return context;
+export function useAgentLoader() {
+  const [isExecuting, setIsExecuting] = useState(false);
+  
+  return {
+    isExecuting,
+    setIsExecuting,
+  };
 }
 
-export default function useAgentHook() {
-  return useAgent();
-}
+export default useAgentLoader;

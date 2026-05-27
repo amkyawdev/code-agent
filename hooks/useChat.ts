@@ -1,14 +1,12 @@
 import { useState, useCallback } from 'react';
-import { useChat } from '@/contexts/ChatContext';
 
-export function useChat() {
+export function useChatLoader() {
   const [isLoading, setIsLoading] = useState(false);
 
   return {
     isLoading,
+    setIsLoading,
   };
 }
 
-export default function useChatHook() {
-  return useChat();
-}
+export default useChatLoader;
