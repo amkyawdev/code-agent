@@ -1,10 +1,35 @@
-import { useHistoryContext } from '@/contexts/HistoryContext';
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export interface HistoryItem {
+  id: string;
+  title: string;
+  date: Date;
+  messages: number;
+  model: string;
+}
 
 export function useHistory() {
-  const context = useHistoryContext();
-  return context;
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  useEffect(() => {
+    // Load history from storage
+    setHistory([]);
+  }, []);
+
+  const deleteItem = (id: string) => {
+    setHistory((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const clearAll = () => {
+    setHistory([]);
+  };
+
+  return {
+    history,
+    deleteItem,
+    clearAll,
+  };
 }
 
-export default function useHistoryHook() {
-  return useHistory();
-}
+export default useHistory;
