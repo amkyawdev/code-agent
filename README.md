@@ -7,13 +7,9 @@
 [![React Native](https://img.shields.io/badge/React%20Native-Expo-61DAFB.svg)](https://expo.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.1-blue.svg)](https://www.typescriptlang.org/)
 
-<div align="center">
-  
 **Your intelligent companion for faster, better code development**
 
 [Features](#-features) • [Getting Started](#-getting-started) • [Architecture](#-architecture) • [Skills](#-skills) • [Deployment](#-deployment)
-
-</div>
 
 ---
 
@@ -23,15 +19,15 @@ Code Agent is a powerful AI-powered development assistant built with React Nativ
 
 ```mermaid
 graph LR
-    A[👤 User] -->|Request| B[🤖 Code Agent]
-    B --> C[🧠 AI Processing]
-    C --> D[📝 Response]
+    A[User] -->|Request| B[Code Agent]
+    B --> C[AI Processing]
+    C --> D[Response]
     
     subgraph AI Providers
-        E[🤖 Gemini]
-        F[📘 OpenAI]
-        G[🔍 Perplexity]
-        H[🐟 DeepSeek]
+        E[Gemini]
+        F[OpenAI]
+        G[Perplexity]
+        H[DeepSeek]
     end
     
     C --> E
@@ -44,12 +40,12 @@ graph LR
 
 | Feature | Description |
 |---------|-------------|
-| 💬 **AI Chat** | Natural conversation with multiple AI models |
-| 🔧 **Code Agent** | Execute complex coding tasks automatically |
-| 💾 **History** | Searchable conversation history |
-| 📚 **Skills** | Dynamic skill loading for specialized tasks |
-| 🎨 **Dark Theme** | Beautiful Minimax.io-style interface |
-| ⚡ **Fast** | Optimized for speed and responsiveness |
+| **AI Chat** | Natural conversation with multiple AI models |
+| **Code Agent** | Execute complex coding tasks automatically |
+| **History** | Searchable conversation history |
+| **Skills** | Dynamic skill loading for specialized tasks |
+| **Dark Theme** | Beautiful Minimax.io-style interface |
+| **Fast** | Optimized for speed and responsiveness |
 
 ## 🏗 Architecture
 
@@ -58,27 +54,27 @@ graph LR
 ```mermaid
 graph TB
     subgraph Client Layer
-        A[📱 React Native App] --> B[🎨 UI Components]
-        A --> C[📦 Expo Router]
+        A[React Native App] --> B[UI Components]
+        A --> C[Expo Router]
     end
     
     subgraph Business Logic
-        D[⚙️ Context Providers]
-        E[🪝 Custom Hooks]
-        F[🎯 Services]
+        D[Context Providers]
+        E[Custom Hooks]
+        F[Services]
     end
     
     subgraph AI Layer
-        G[🤖 AI Service Router]
-        H[🔌 API Providers]
-        I[📄 Skill Loader]
+        G[AI Service Router]
+        H[API Providers]
+        I[Skill Loader]
     end
     
     subgraph External Services
-        J[☁️ Gemini API]
-        K[📘 OpenAI API]
-        L[🔍 Perplexity API]
-        M[🐟 DeepSeek API]
+        J[Gemini API]
+        K[OpenAI API]
+        L[Perplexity API]
+        M[DeepSeek API]
     end
     
     A --> D
@@ -97,19 +93,19 @@ graph TB
 
 ```mermaid
 graph TD
-    A[🚀 Get Started] --> B[🏠 Home]
-    B --> C[💬 Chat]
-    B --> D[🔧 Agent]
-    B --> E[📜 History]
-    B --> F[📚 Docs]
-    B --> G[⚙️ API Settings]
-    B --> H[📖 Skills]
+    A[Get Started] --> B[Home]
+    B --> C[Chat]
+    B --> D[Agent]
+    B --> E[History]
+    B --> F[Docs]
+    B --> G[API Settings]
+    B --> H[Skills]
     
-    C --> I[💭 Thinking Animation]
-    D --> J[🖥️ CLI Output]
-    F --> K[📋 Documentation]
-    G --> L[🔑 API Keys]
-    H --> M[🎯 Skill Details]
+    C --> I[Thinking Animation]
+    D --> J[CLI Output]
+    F --> K[Documentation]
+    G --> L[API Keys]
+    H --> M[Skill Details]
 ```
 
 ### Component Hierarchy
@@ -117,21 +113,21 @@ graph TD
 ```mermaid
 graph TB
     subgraph Components
-        A[🧩 UI Components] --> A1[Button]
+        A[UI Components] --> A1[Button]
         A --> A2[Card]
         A --> A3[Input]
         A --> A4[Icon]
         A --> A5[Loader]
         
-        B[💬 Chat Components] --> B1[ChatBubble]
+        B[Chat Components] --> B1[ChatBubble]
         B --> B2[ChatInput]
         B --> B3[CodeBlock]
         
-        C[🔧 Agent Components] --> C1[AgentStatus]
+        C[Agent Components] --> C1[AgentStatus]
         C --> C2[ThinkingAnimation]
         C --> C3[CLIOutput]
         
-        D[🎭 Animation Components] --> D1[DeepThinking]
+        D[Animation Components] --> D1[DeepThinking]
         D --> D2[ThinkingIndicator]
     end
 ```
@@ -141,22 +137,22 @@ graph TB
 ```mermaid
 graph LR
     subgraph Frontend
-        A[⚛️ React Native] --> B[📱 Expo]
-        B --> C[🎨 Tailwind CSS]
-        C --> D[🎯 NativeWind]
+        A[React Native] --> B[Expo]
+        B --> C[Tailwind CSS]
+        C --> D[NativeWind]
     end
     
     subgraph Navigation
-        E[🧭 Expo Router] --> F[📑 Tab Navigation]
-        F --> G[📄 File-based Routing]
+        E[Expo Router] --> F[Tab Navigation]
+        F --> G[File-based Routing]
     end
     
     subgraph State Management
-        H[⚡ React Context] --> I[🪝 Custom Hooks]
+        H[React Context] --> I[Custom Hooks]
     end
     
     subgraph AI Integration
-        J[🤖 AI Service Router] --> K[🔌 Multiple Providers]
+        J[AI Service Router] --> K[Multiple Providers]
         K --> L[Gemini / OpenAI / Perplexity / DeepSeek]
     end
     
@@ -201,24 +197,24 @@ npx expo start
 
 ```mermaid
 graph TD
-    A[📁 code-agent] --> B[📁 app]
-    A --> C[📁 components]
-    A --> D[📁 services]
-    A --> E[📁 contexts]
-    A --> F[📁 hooks]
-    A --> G[📁 types]
-    A --> H[📁 skills]
-    A --> I[📁 utils]
+    A[code-agent] --> B[app]
+    A --> C[components]
+    A --> D[services]
+    A --> E[contexts]
+    A --> F[hooks]
+    A --> G[types]
+    A --> H[skills]
+    A --> I[utils]
     
-    B --> B1[🧭 (tabs)]
-    B --> B2[📄 docs]
-    B --> B3[⚙️ api-input]
-    B --> B4[📖 skill]
+    B --> B1[(tabs)]
+    B --> B2[docs]
+    B --> B3[api-input]
+    B --> B4[skill]
     
-    C --> C1[🧩 ui]
-    C --> C2[💬 chat]
-    C --> C3[🔧 agent]
-    C --> C4[🎭 animations]
+    C --> C1[ui]
+    C --> C2[chat]
+    C --> C3[agent]
+    C --> C4[animations]
 ```
 
 ```
@@ -262,25 +258,25 @@ Code Agent uses dynamic skills for specialized tasks:
 
 ```mermaid
 graph TD
-    A[🎯 Skill System] --> B[💬 Chat Skill]
-    A --> C[🌐 Knowledge Web]
-    A --> D[💻 Coder Skill]
-    A --> E[🧠 Thinking Skill]
+    A[Skill System] --> B[Chat Skill]
+    A --> C[Knowledge Web]
+    A --> D[Coder Skill]
+    A --> E[Thinking Skill]
     
     B --> B1[Conversation guidelines]
-    C --> C1[Web research & synthesis]
-    D --> D1[Code generation & debugging]
-    E --> E1[Deep reasoning & analysis]
+    C --> C1[Web research and synthesis]
+    D --> D1[Code generation and debugging]
+    E --> E1[Deep reasoning and analysis]
 ```
 
 ### Available Skills
 
 | Skill | File | Purpose |
 |-------|------|---------|
-| 💬 **Chat** | `chat-skill.md` | Conversational AI guidelines |
-| 🌐 **Knowledge Web** | `knowledge-web.md` | Web research and info gathering |
-| 💻 **Coder** | `coder-skill.md` | Programming assistance |
-| 🧠 **Thinking** | `thanking.md` | Deep reasoning and analysis |
+| **Chat** | `chat-skill.md` | Conversational AI guidelines |
+| **Knowledge Web** | `knowledge-web.md` | Web research and info gathering |
+| **Coder** | `coder-skill.md` | Programming assistance |
+| **Thinking** | `thanking.md` | Deep reasoning and analysis |
 
 ### Skill Format (Anthropic-aligned)
 
@@ -321,18 +317,18 @@ vercel --prod
 
 ```env
 # AI API Keys
-GEMINI_API_KEY=your-gemini-key
-OPENAI_API_KEY=your-openai-key
-PERPLEXITY_API_KEY=your-perplexity-key
-DEEPSEEK_API_KEY=your-deepseek-key
+GEMINI_API_KEY=your-gemini-key-type
+OPENAI_API_KEY=your-openai-key-type
+PERPLEXITY_API_KEY=your-perplexity-key-type
+DEEPSEEK_API_KEY=your-deepseek-key-type
 ```
 
 ```mermaid
 graph LR
-    A[📝 Code] --> B[🚀 Vercel]
-    B --> C[☁️ CDN]
-    C --> D[🌍 Global Edge Network]
-    D --> E[👤 Users]
+    A[Code] --> B[Vercel]
+    B --> C[CDN]
+    C --> D[Global Edge Network]
+    D --> E[Users]
 ```
 
 ## 🤝 Contributing
@@ -361,10 +357,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-<div align="center">
-  
-**Built with ❤️ by [AmkyawDev](https://github.com/amkyawdev)**
+**Built with by [AmkyawDev](https://github.com/amkyawdev)**
 
-**⭐ Star this repo if you find it useful!**
-
-</div>
+**Star this repo if you find it useful!**
