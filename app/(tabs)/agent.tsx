@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAPI } from '@/contexts/APIContext';
 
 interface Message {
   id: string;
@@ -8,20 +9,11 @@ interface Message {
   content: string;
 }
 
-const getApiKeys = () => {
-  try {
-    const stored = localStorage.getItem('api_keys');
-    return stored ? JSON.parse(stored) : {};
-  } catch { return {}; }
-};
-
 export default function CoderScreen() {
   const [taskInput, setTaskInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  const getApiKey = (p: string) => getApiKeys()[p] || '';
-  const isConfigured = (p: string) => !!getApiKey(p);
+  const { apiKeys, isConfigured } = useAPI();
 
   const callAI = async (task: string) => {
     const prompt = `You are a Coder Agent like Claude, Manus, or Open Hands.
@@ -34,7 +26,7 @@ Respond with code and commands.`;
 
     if (isConfigured('gemini')) {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${getApiKey('gemini')}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeys.gemini}`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 8192 } }) }
       );
@@ -42,13 +34,13 @@ Respond with code and commands.`;
       return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     } else if (isConfigured('deepseek')) {
       const res = await fetch('https://api.deepseek.com/chat/completions', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getApiKey('deepseek')}` },
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKeys.deepseek}` },
         body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], max_tokens: 8192 })
       });
       const data = await res.json();
       return data.choices?.[0]?.message?.content || '';
     }
-    return 'Configure API key in Settings page.';
+    return 'No API key in Vercel environment.';
   };
 
   const handleSend = async () => {
@@ -73,7 +65,6 @@ Respond with code and commands.`;
         <Text style={styles.headerTitle}>Coder</Text>
         <View style={[styles.statusDot, { backgroundColor: isConfigured('gemini') || isConfigured('deepseek') ? '#22c55e' : '#ef4444' }]} />
       </View>
-
       <ScrollView style={styles.chatArea} contentContainerStyle={styles.chatContent}>
         {messages.length === 0 && (
           <View style={styles.welcome}>
@@ -92,7 +83,6 @@ Respond with code and commands.`;
         ))}
         {isLoading && <View style={[styles.msg, styles.aiMsg]}><Text style={styles.msgText}>Thinking...</Text></View>}
       </ScrollView>
-
       <View style={styles.inputArea}>
         <TextInput style={styles.input} value={taskInput} onChangeText={setTaskInput} placeholder="What to build..." placeholderTextColor="#666" multiline />
         <TouchableOpacity style={styles.sendBtn} onPress={handleSend} disabled={isLoading}>

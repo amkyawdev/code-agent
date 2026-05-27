@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAPI } from '@/contexts/APIContext';
 
 interface Message {
   id: string;
@@ -8,48 +9,27 @@ interface Message {
   content: string;
 }
 
-const getApiKeys = () => {
-  try {
-    const stored = localStorage.getItem('api_keys');
-    return stored ? JSON.parse(stored) : {};
-  } catch { return {}; }
-};
-
 export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { apiKeys, isConfigured } = useAPI();
   const flatListRef = useRef<FlatList>(null);
 
-  const getApiKey = (provider: string) => {
-    const keys = getApiKeys();
-    return keys[provider] || '';
-  };
-
-  const isConfigured = (provider: string) => {
-    return !!getApiKey(provider);
-  };
-
   const callGemini = async (msg: string) => {
-    const apiKey = getApiKey('gemini');
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: msg }] }] }),
-      }
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeys.gemini}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: msg }] }] }) }
     );
     const data = await res.json();
     return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
   };
 
   const callDeepSeek = async (msg: string) => {
-    const apiKey = getApiKey('deepseek');
     const res = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: msg }], max_tokens: 2048 }),
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKeys.deepseek}` },
+      body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: msg }], max_tokens: 2048 })
     });
     const data = await res.json();
     return data.choices?.[0]?.message?.content || 'No response';
@@ -61,13 +41,11 @@ export default function ChatScreen() {
     setMessages(prev => [...prev, userMsg]);
     setInputText('');
     setIsLoading(true);
-
     try {
       let response = '';
       if (isConfigured('gemini')) response = await callGemini(inputText.trim());
       else if (isConfigured('deepseek')) response = await callDeepSeek(inputText.trim());
-      else response = 'Add API key in Settings page to use AI chat.';
-
+      else response = 'No API key configured in Vercel.';
       setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: response }]);
     } catch (e: any) {
       setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: `Error: ${e.message}` }]);
@@ -78,7 +56,6 @@ export default function ChatScreen() {
 
   const renderMsg = ({ item }: { item: Message }) => (
     <View style={[styles.msgContainer, item.role === 'user' ? styles.userMsg : styles.assistantMsg]}>
-      <Ionicons name={item.role === 'user' ? 'person' : 'code-slash'} size={16} color={item.role === 'user' ? '#8b5cf6' : '#6366f1'} />
       <View style={[styles.bubble, item.role === 'user' ? styles.userBubble : styles.assistantBubble]}>
         <Text style={styles.msgText}>{item.content}</Text>
       </View>
@@ -89,25 +66,10 @@ export default function ChatScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Chat</Text>
-        {!isConfigured('gemini') && !isConfigured('deepseek') && (
-          <View style={styles.warningBadge}><Text style={styles.warningText}>No API</Text></View>
-        )}
+        <View style={[styles.statusDot, { backgroundColor: isConfigured('gemini') || isConfigured('deepseek') ? '#22c55e' : '#ef4444' }]} />
       </View>
-
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        renderItem={renderMsg}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.msgList}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Ionicons name="chatbubbles-outline" size={48} color="#262626" />
-            <Text style={styles.emptyText}>{isConfigured('gemini') || isConfigured('deepseek') ? 'Start chatting' : 'Add API key in Settings'}</Text>
-          </View>
-        }
-      />
-
+      <FlatList ref={flatListRef} data={messages} renderItem={renderMsg} keyExtractor={(item) => item.id} contentContainerStyle={styles.msgList}
+        ListEmptyComponent={<View style={styles.empty}><Ionicons name="chatbubbles-outline" size={48} color="#262626" /><Text style={styles.emptyText}>Start chatting</Text></View>} />
       <View style={styles.inputArea}>
         <TextInput style={styles.input} value={inputText} onChangeText={setInputText} placeholder="Type..." placeholderTextColor="#666" multiline />
         <TouchableOpacity style={styles.sendBtn} onPress={handleSend} disabled={isLoading || !inputText.trim()}>
@@ -122,12 +84,11 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderBottomWidth: 1, borderBottomColor: '#262626' },
   headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
-  warningBadge: { backgroundColor: '#f59e0b', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
-  warningText: { color: '#000', fontSize: 10, fontWeight: '600' },
+  statusDot: { width: 8, height: 8, borderRadius: 4 },
   msgList: { flexGrow: 1, padding: 16 },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 },
   emptyText: { color: '#666', fontSize: 14, marginTop: 12 },
-  msgContainer: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 12 },
+  msgContainer: { flexDirection: 'row', marginBottom: 12 },
   userMsg: { justifyContent: 'flex-end' },
   assistantMsg: { justifyContent: 'flex-start' },
   bubble: { maxWidth: '75%', padding: 12, borderRadius: 16 },
@@ -136,5 +97,5 @@ const styles = StyleSheet.create({
   msgText: { color: '#fff', fontSize: 14 },
   inputArea: { flexDirection: 'row', alignItems: 'center', padding: 12, backgroundColor: '#1a1a1a', borderTopWidth: 1, borderTopColor: '#262626', gap: 8 },
   input: { flex: 1, backgroundColor: '#0a0a0a', padding: 12, borderRadius: 20, color: '#fff', fontSize: 15, maxHeight: 80 },
-  sendBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#6366f1', justifyContent: 'center', alignItems: 'center' },
+  sendBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#6366f1', justifyContent: 'center', alignItems: 'center', opacity: 0.7 },
 });
