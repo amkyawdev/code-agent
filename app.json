@@ -20,7 +20,8 @@
         "projectId": "amk-apk",
         "storageBucket": "amk-apk.firebasestorage.app",
         "firebaseUrl": "https://amk-apk-default-rtdb.firebaseio.com"
-      }
+      },
+      "env": {}
     },
     "ios": {
       "supportsTablet": true,

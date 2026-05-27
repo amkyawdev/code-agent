@@ -1,15 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
-// Read from environment variables (Vercel) or process.env (development)
-const getEnvVar = (key: string): string => {
-  if (typeof window !== 'undefined') {
-    return (window as any).ENV?.[key] || 
-           (process as any).env?.[key] || 
-           '';
-  }
-  return '';
-};
-
 interface APIKeys {
   gemini: string;
   openai: string;
@@ -24,33 +14,57 @@ interface APIContextType {
   isConfigured: (provider: keyof APIKeys) => boolean;
 }
 
-const defaultAPIKeys: APIKeys = {
-  gemini: getEnvVar('EXPO_PUBLIC_GEMINI_API_KEY') || '',
-  openai: getEnvVar('EXPO_PUBLIC_OPENAI_API_KEY') || '',
-  perplexity: getEnvVar('EXPO_PUBLIC_PERPLEXITY_API_KEY') || '',
-  deepseek: getEnvVar('EXPO_PUBLIC_DEEPSEEK_API_KEY') || '',
+// Read from window.ENV (Vercel) or localStorage (fallback)
+const getStoredKey = (provider: string): string => {
+  if (typeof window !== 'undefined') {
+    // Try Vercel exposed env vars first
+    const vercelEnv = (window as any).__VERCEL_ENV__;
+    if (vercelEnv && vercelEnv[provider]) {
+      return vercelEnv[provider];
+    }
+    // Try localStorage
+    const stored = localStorage.getItem(`api_key_${provider}`);
+    if (stored) return stored;
+  }
+  return '';
 };
 
 const APIContext = createContext<APIContextType | undefined>(undefined);
 
 export function APIProvider({ children }: { children: ReactNode }) {
-  const [apiKeys, setApiKeys] = useState<APIKeys>(defaultAPIKeys);
+  const [apiKeys, setApiKeys] = useState<APIKeys>({
+    gemini: '',
+    deepseek: '',
+    openai: '',
+    perplexity: '',
+  });
 
   useEffect(() => {
-    // Check for Vercel environment variables
-    const geminiKey = (typeof window !== 'undefined' && (window as any).ENV?.GEMINI_API_KEY) || '';
-    const deepseekKey = (typeof window !== 'undefined' && (window as any).ENV?.DEEPSEEK_API_KEY) || '';
-    
-    if (geminiKey || deepseekKey) {
+    // Load from localStorage on mount
+    const loadKeys = () => {
+      setApiKeys({
+        gemini: localStorage.getItem('api_key_gemini') || '',
+        deepseek: localStorage.getItem('api_key_deepseek') || '',
+        openai: localStorage.getItem('api_key_openai') || '',
+        perplexity: localStorage.getItem('api_key_perplexity') || '',
+      });
+    };
+    loadKeys();
+
+    // Also check for Vercel env vars (exposed via window)
+    const vercelKeys = (window as any).__VERCEL_ENV__ || {};
+    if (vercelKeys.GEMINI_API_KEY || vercelKeys.DEEPSEEK_API_KEY) {
       setApiKeys(prev => ({
-        ...prev,
-        gemini: geminiKey || prev.gemini,
-        deepseek: deepseekKey || prev.deepseek,
+        gemini: vercelKeys.GEMINI_API_KEY || prev.gemini,
+        deepseek: vercelKeys.DEEPSEEK_API_KEY || prev.deepseek,
+        openai: prev.openai,
+        perplexity: prev.perplexity,
       }));
     }
   }, []);
 
   const setAPIKey = (provider: keyof APIKeys, key: string) => {
+    localStorage.setItem(`api_key_${provider}`, key);
     setApiKeys((prev) => ({ ...prev, [provider]: key }));
   };
 
@@ -59,7 +73,7 @@ export function APIProvider({ children }: { children: ReactNode }) {
   };
 
   const isConfigured = (provider: keyof APIKeys) => {
-    return apiKeys[provider].length > 0;
+    return apiKeys[provider]?.length > 0;
   };
 
   return (

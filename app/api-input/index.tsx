@@ -1,321 +1,119 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAPI } from '@/contexts/APIContext';
 
-const AI_MODELS = [
-  {
-    id: 'gemini',
-    name: 'Google Gemini',
-    icon: 'planet',
-    color: '#4285f4',
-    placeholder: 'Enter your Gemini API Key',
-    docsUrl: 'https://makersuite.google.com/app/apikey',
-  },
-  {
-    id: 'openai',
-    name: 'OpenAI',
-    icon: 'brain',
-    color: '#22c55e',
-    placeholder: 'Enter your OpenAI API Key',
-    docsUrl: 'https://platform.openai.com/api-keys',
-  },
-  {
-    id: 'perplexity',
-    name: 'Perplexity',
-    icon: 'search',
-    color: '#f59e0b',
-    placeholder: 'Enter your Perplexity API Key',
-    docsUrl: 'https://www.perplexity.ai/settings/api',
-  },
-  {
-    id: 'deepseek',
-    name: 'DeepSeek',
-    icon: 'fish',
-    color: '#06b6d4',
-    placeholder: 'Enter your DeepSeek API Key',
-    docsUrl: 'https://platform.deepseek.com/api_keys',
-  },
-];
+interface Provider {
+  name: string;
+  key: string;
+  placeholder: string;
+}
 
 export default function APIInputScreen() {
-  const insets = useSafeAreaInsets();
-  const { apiKeys, setAPIKey } = useAPI();
-  const [activeTab, setActiveTab] = useState('gemini');
-  const [keyValue, setKeyValue] = useState('');
+  const router = useRouter();
+  const [providers, setProviders] = useState<Provider[]>([
+    { name: 'gemini', key: '', placeholder: 'AIza...' },
+    { name: 'deepseek', key: '', placeholder: 'sk-...' },
+    { name: 'openai', key: '', placeholder: 'sk-...' },
+  ]);
+  const [loading, setLoading] = useState(true);
 
-  const currentModel = AI_MODELS.find((m) => m.id === activeTab)!;
+  useEffect(() => {
+    loadKeys();
+  }, []);
 
-  const handleSave = () => {
-    if (keyValue.trim()) {
-      setAPIKey(activeTab, keyValue.trim());
-      setKeyValue('');
-      Alert.alert('Success', `${currentModel.name} API key saved successfully!`);
+  const loadKeys = () => {
+    try {
+      const stored = localStorage.getItem('api_keys');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setProviders(prev => prev.map(p => ({ ...p, key: parsed[p.name] || '' })));
+      }
+    } catch (e) {}
+    setLoading(false);
+  };
+
+  const saveKeys = () => {
+    try {
+      const keys: Record<string, string> = {};
+      providers.forEach(p => { keys[p.name] = p.key; });
+      localStorage.setItem('api_keys', JSON.stringify(keys));
+      Alert.alert('Success', 'API keys saved! Refresh the page to use them.');
+    } catch (e) {
+      Alert.alert('Error', 'Failed to save');
     }
   };
 
-  const handleClear = () => {
-    Alert.alert(
-      'Clear API Key',
-      `Are you sure you want to remove your ${currentModel.name} API key?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clear',
-          style: 'destructive',
-          onPress: () => setAPIKey(activeTab, ''),
-        },
-      ]
-    );
+  const updateKey = (name: string, value: string) => {
+    setProviders(prev => prev.map(p => p.name === name ? { ...p, key: value } : p));
   };
 
-  const handleGetKey = () => {
-    Alert.alert(
-      'Get API Key',
-      `Visit ${currentModel.docsUrl} to get your ${currentModel.name} API key.`,
-      [{ text: 'OK' }]
-    );
-  };
+  if (loading) {
+    return <View style={styles.container}><Text style={styles.loading}>Loading...</Text></View>;
+  }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>API Configuration</Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>API Settings</Text>
+        <View style={{ width: 24 }} />
       </View>
 
-      <View style={styles.tabs}>
-        {AI_MODELS.map((model) => (
-          <TouchableOpacity
-            key={model.id}
-            style={[styles.tab, activeTab === model.id && { borderBottomColor: model.color }]}
-            onPress={() => {
-              setActiveTab(model.id);
-              setKeyValue('');
-            }}
-          >
-            <Ionicons name={model.icon as any} size={20} color={activeTab === model.id ? model.color : '#666666'} />
-            <Text style={[styles.tabText, activeTab === model.id && { color: model.color }]}>
-              {model.name.split(' ')[0]}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      <View style={styles.infoBox}>
+        <Ionicons name="information-circle" size={20} color="#6366f1" />
+        <Text style={styles.infoText}>Add your API keys to enable AI features. Keys are stored in your browser.</Text>
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        <View style={styles.modelCard}>
-          <View style={[styles.modelIcon, { backgroundColor: currentModel.color + '20' }]}>
-            <Ionicons name={currentModel.icon as any} size={32} color={currentModel.color} />
-          </View>
-          <Text style={styles.modelName}>{currentModel.name}</Text>
-          <Text style={styles.modelStatus}>
-            {apiKeys[currentModel.id as keyof typeof apiKeys] 
-              ? '✓ Configured' 
-              : 'Not configured'}
-          </Text>
+      {providers.map((p) => (
+        <View key={p.name} style={styles.card}>
+          <Text style={styles.label}>{p.name.toUpperCase()}</Text>
+          <TextInput
+            style={styles.input}
+            value={p.key}
+            onChangeText={(v) => updateKey(p.name, v)}
+            placeholder={p.placeholder}
+            placeholderTextColor="#666"
+            secureTextEntry={p.name !== 'gemini'}
+            autoCapitalize="none"
+          />
         </View>
+      ))}
 
-        <View style={styles.inputSection}>
-          <Text style={styles.sectionLabel}>API Key</Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={keyValue}
-              onChangeText={setKeyValue}
-              placeholder={currentModel.placeholder}
-              placeholderTextColor="#666666"
-              secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
-          
-          <TouchableOpacity style={styles.getKeyButton} onPress={handleGetKey}>
-            <Ionicons name="open-outline" size={18} color="#6366f1" />
-            <Text style={styles.getKeyText}>Get API Key</Text>
-          </TouchableOpacity>
+      <TouchableOpacity style={styles.saveBtn} onPress={saveKeys}>
+        <Ionicons name="save" size={20} color="#fff" />
+        <Text style={styles.saveText}>Save Keys</Text>
+      </TouchableOpacity>
+
+      <View style={styles.tipBox}>
+        <Ionicons name="link" size={20} color="#22c55e" />
+        <View>
+          <Text style={styles.tipTitle}>Get API Keys:</Text>
+          <Text style={styles.tip}>• Gemini: aistudio.google.com</Text>
+          <Text style={styles.tip}>• DeepSeek: platform.deepseek.com</Text>
+          <Text style={styles.tip}>• OpenAI: platform.openai.com</Text>
         </View>
-
-        <View style={styles.actions}>
-          <TouchableOpacity 
-            style={[styles.saveButton, { backgroundColor: currentModel.color }]}
-            onPress={handleSave}
-          >
-            <Ionicons name="save" size={20} color="#ffffff" />
-            <Text style={styles.saveButtonText}>Save API Key</Text>
-          </TouchableOpacity>
-
-          {apiKeys[currentModel.id as keyof typeof apiKeys] && (
-            <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
-              <Ionicons name="trash-outline" size={20} color="#ef4444" />
-              <Text style={styles.clearButtonText}>Clear API Key</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <View style={styles.infoSection}>
-          <Ionicons name="shield-checkmark" size={20} color="#22c55e" />
-          <Text style={styles.infoText}>
-            Your API keys are stored securely on your device and never sent to our servers.
-          </Text>
-        </View>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#262626',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-  tabs: {
-    flexDirection: 'row',
-    backgroundColor: '#1a1a1a',
-    borderBottomWidth: 1,
-    borderBottomColor: '#262626',
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-    gap: 6,
-  },
-  tabText: {
-    fontSize: 12,
-    color: '#666666',
-    fontWeight: '500',
-  },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 16,
-  },
-  modelCard: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#262626',
-  },
-  modelIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  modelName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 4,
-  },
-  modelStatus: {
-    fontSize: 14,
-    color: '#a3a3a3',
-  },
-  inputSection: {
-    marginBottom: 24,
-  },
-  sectionLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#a3a3a3',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  inputContainer: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#262626',
-    overflow: 'hidden',
-  },
-  input: {
-    padding: 16,
-    color: '#ffffff',
-    fontSize: 16,
-    fontFamily: 'monospace',
-  },
-  getKeyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 12,
-    gap: 6,
-  },
-  getKeyText: {
-    fontSize: 14,
-    color: '#6366f1',
-  },
-  actions: {
-    gap: 12,
-    marginBottom: 24,
-  },
-  saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 12,
-    gap: 8,
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  clearButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#1a1a1a',
-    borderWidth: 1,
-    borderColor: '#ef4444',
-    gap: 8,
-  },
-  clearButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ef4444',
-  },
-  infoSection: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#262626',
-    gap: 12,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: 12,
-    color: '#a3a3a3',
-    lineHeight: 18,
-  },
+  container: { flex: 1, backgroundColor: '#0a0a0a' },
+  content: { padding: 16 },
+  loading: { color: '#fff', textAlign: 'center', marginTop: 100 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
+  infoBox: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(99,102,241,0.1)', padding: 12, borderRadius: 8, marginBottom: 24 },
+  infoText: { color: '#a3a3a3', fontSize: 13, flex: 1 },
+  card: { backgroundColor: '#1a1a1a', borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#262626' },
+  label: { fontSize: 12, fontWeight: '600', color: '#6366f1', marginBottom: 8 },
+  input: { backgroundColor: '#0a0a0a', padding: 14, borderRadius: 8, color: '#fff', fontSize: 14, borderWidth: 1, borderColor: '#262626' },
+  saveBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#6366f1', padding: 16, borderRadius: 12, gap: 8, marginVertical: 24 },
+  saveText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  tipBox: { flexDirection: 'row', backgroundColor: 'rgba(34,197,94,0.1)', padding: 16, borderRadius: 12, gap: 12 },
+  tipTitle: { fontSize: 14, fontWeight: '600', color: '#22c55e', marginBottom: 8 },
+  tip: { fontSize: 12, color: '#a3a3a3', marginBottom: 4 },
 });
