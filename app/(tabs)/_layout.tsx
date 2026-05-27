@@ -1,6 +1,4 @@
 import { Tabs } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 function TabBarIcon({ name, color, size }: { name: string; color: string; size: number }) {
@@ -8,8 +6,6 @@ function TabBarIcon({ name, color, size }: { name: string; color: string; size: 
 }
 
 export default function TabsLayout() {
-  const insets = useSafeAreaInsets();
-
   return (
     <Tabs
       screenOptions={{
@@ -19,9 +15,8 @@ export default function TabsLayout() {
           backgroundColor: '#1a1a1a',
           borderTopColor: '#262626',
           borderTopWidth: 1,
-          height: 60 + insets.bottom,
-          paddingBottom: insets.bottom,
-          paddingTop: 10,
+          height: 64,
+          paddingTop: 8,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -35,18 +30,11 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} size={24} />,
-          headerShown: false,
-        }}
-      />
-      <Tabs.Screen
         name="chat"
         options={{
           title: 'Chat',
           tabBarIcon: ({ color }) => <TabBarIcon name="chatbubbles" color={color} size={24} />,
+          headerShown: false,
         }}
       />
       <Tabs.Screen

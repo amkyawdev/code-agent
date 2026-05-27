@@ -26,14 +26,6 @@ export default function ChatScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Chat</Text>
-        <View style={styles.headerActions}>
-          <Ionicons name="refresh" size={24} color="#a3a3a3" style={styles.headerIcon} />
-          <Ionicons name="settings" size={24} color="#a3a3a3" style={styles.headerIcon} />
-        </View>
-      </View>
-
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -67,26 +59,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0a0a0a',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#262626',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-  headerActions: {
-    flexDirection: 'row',
-  },
-  headerIcon: {
-    marginLeft: 16,
   },
   messagesList: {
     flexGrow: 1,

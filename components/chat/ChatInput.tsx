@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import React from 'react';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface ChatInputProps {
@@ -11,69 +11,52 @@ interface ChatInputProps {
 }
 
 export default function ChatInput({ value, onChangeText, onSend, placeholder = 'Type a message...', disabled = false }: ChatInputProps) {
-  const [isFocused, setIsFocused] = useState(false);
+  const canSend = value.trim().length > 0 && !disabled;
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
-      <View style={[styles.container, isFocused && styles.containerFocused]}>
-        <TouchableOpacity style={styles.attachButton}>
-          <Ionicons name="attach" size={24} color="#a3a3a3" />
-        </TouchableOpacity>
-        
-        <TextInput
-          style={styles.input}
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor="#666666"
-          multiline
-          maxLength={2000}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          editable={!disabled}
-        />
+    <View style={styles.container}>
+      <TextInput
+        style={styles.input}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor="#666666"
+        multiline
+        maxLength={2000}
+        editable={!disabled}
+      />
 
-        <TouchableOpacity
-          style={[styles.sendButton, (!value.trim() || disabled) && styles.sendButtonDisabled]}
-          onPress={onSend}
-          disabled={!value.trim() || disabled}
-        >
-          <Ionicons name="send" size={20} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+      <TouchableOpacity
+        style={[styles.sendButton, !canSend && styles.sendButtonDisabled]}
+        onPress={onSend}
+        disabled={!canSend}
+      >
+        <Ionicons name="send" size={20} color="#ffffff" />
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 12,
     backgroundColor: '#1a1a1a',
     borderTopWidth: 1,
     borderTopColor: '#262626',
   },
-  containerFocused: {
-    backgroundColor: '#262626',
-  },
-  attachButton: {
-    padding: 8,
-  },
   input: {
     flex: 1,
+    minHeight: 44,
     maxHeight: 100,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     fontSize: 16,
     color: '#ffffff',
     backgroundColor: '#0a0a0a',
-    borderRadius: 20,
-    marginHorizontal: 8,
+    borderRadius: 22,
   },
   sendButton: {
     width: 44,
@@ -82,6 +65,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#6366f1',
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 8,
   },
   sendButtonDisabled: {
     backgroundColor: '#262626',
