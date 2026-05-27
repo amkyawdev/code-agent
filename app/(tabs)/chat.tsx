@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, Activity
 import { Ionicons } from '@expo/vector-icons';
 import { useAPI } from '@/contexts/APIContext';
 import { useHistory } from '@/contexts/HistoryContext';
+import MenuBar from '@/components/MenuBar';
+import NavBar from '@/components/NavBar';
 
 interface Message {
   id: string;
@@ -16,7 +18,6 @@ export default function ChatScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const { apiKeys, isConfigured } = useAPI();
   const { saveConversation } = useHistory();
-  const flatListRef = useRef<FlatList>(null);
 
   const callGemini = async (msg: string) => {
     const res = await fetch(
@@ -55,7 +56,6 @@ export default function ChatScreen() {
       const allMessages = [...newMessages, { id: (Date.now() + 1).toString(), role: 'assistant' as const, content: response }];
       setMessages(allMessages);
       
-      // Save to history
       if (allMessages.length >= 2) {
         saveConversation({
           title: newMessages[0].content.slice(0, 50),
@@ -80,38 +80,38 @@ export default function ChatScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Chat</Text>
-        <View style={[styles.statusDot, { backgroundColor: isConfigured('gemini') || isConfigured('deepseek') ? '#22c55e' : '#ef4444' }]} />
-      </View>
-      <FlatList ref={flatListRef} data={messages} renderItem={renderMsg} keyExtractor={(item) => item.id} contentContainerStyle={styles.msgList}
-        ListEmptyComponent={<View style={styles.empty}><Ionicons name="chatbubbles-outline" size={48} color="#262626" /><Text style={styles.emptyText}>Start chatting</Text></View>} />
+      <MenuBar />
+      <FlatList 
+        data={messages} 
+        renderItem={renderMsg} 
+        keyExtractor={(item) => item.id} 
+        contentContainerStyle={styles.msgList}
+        ListEmptyComponent={<View style={styles.empty}><Ionicons name="chatbubbles-outline" size={48} color="#262626" /><Text style={styles.emptyText}>Start chatting</Text></View>} 
+      />
       <View style={styles.inputArea}>
         <TextInput style={styles.input} value={inputText} onChangeText={setInputText} placeholder="Type..." placeholderTextColor="#666" multiline />
         <TouchableOpacity style={styles.sendBtn} onPress={handleSend} disabled={isLoading || !inputText.trim()}>
           {isLoading ? <ActivityIndicator color="#fff" size="small" /> : <Ionicons name="send" size={20} color="#fff" />}
         </TouchableOpacity>
       </View>
+      <NavBar />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderBottomWidth: 1, borderBottomColor: '#262626' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  msgList: { flexGrow: 1, padding: 16 },
+  msgList: { flexGrow: 1, padding: 16, paddingTop: 70, paddingBottom: 100 },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 },
   emptyText: { color: '#666', fontSize: 14, marginTop: 12 },
   msgContainer: { flexDirection: 'row', marginBottom: 12 },
   userMsg: { justifyContent: 'flex-end' },
   assistantMsg: { justifyContent: 'flex-start' },
   bubble: { maxWidth: '75%', padding: 12, borderRadius: 16 },
-  userBubble: { backgroundColor: '#6366f1', borderBottomRightRadius: 4 },
+  userBubble: { backgroundColor: '#6366f1' },
   assistantBubble: { backgroundColor: '#1a1a1a', borderWidth: 1, borderColor: '#262626' },
   msgText: { color: '#fff', fontSize: 14 },
   inputArea: { flexDirection: 'row', alignItems: 'center', padding: 12, backgroundColor: '#1a1a1a', borderTopWidth: 1, borderTopColor: '#262626', gap: 8 },
   input: { flex: 1, backgroundColor: '#0a0a0a', padding: 12, borderRadius: 20, color: '#fff', fontSize: 15, maxHeight: 80 },
-  sendBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#6366f1', justifyContent: 'center', alignItems: 'center', opacity: 0.7 },
+  sendBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#6366f1', justifyContent: 'center', alignItems: 'center' },
 });

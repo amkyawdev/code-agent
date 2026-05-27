@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import MenuBar from '@/components/MenuBar';
 import NavBar from '@/components/NavBar';
 
 const pages = [
@@ -19,6 +20,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      <MenuBar />
       <ScrollView style={styles.content} contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top }]}>
         <View style={styles.hero}>
           <Ionicons name="code-slash" size={48} color="#6366f1" />

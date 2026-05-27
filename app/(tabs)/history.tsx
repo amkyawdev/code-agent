@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { useHistory } from '@/contexts/HistoryContext';
+import MenuBar from '@/components/MenuBar';
+import NavBar from '@/components/NavBar';
 
 export default function HistoryScreen() {
-  const router = useRouter();
   const { conversations, deleteConversation } = useHistory();
 
   const formatDate = (timestamp: number) => {
@@ -13,7 +13,6 @@ export default function HistoryScreen() {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
     if (days === 0) return 'Today';
     if (days === 1) return 'Yesterday';
     if (days < 7) return `${days} days ago`;
@@ -28,7 +27,7 @@ export default function HistoryScreen() {
   };
 
   const renderItem = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.item} onPress={() => {}}>
+    <View style={styles.item}>
       <View style={styles.itemIcon}>
         <Ionicons name={item.type === 'chat' ? 'chatbubbles' : 'code-slash'} size={20} color="#6366f1" />
       </View>
@@ -42,16 +41,12 @@ export default function HistoryScreen() {
       <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item.id)}>
         <Ionicons name="trash-outline" size={18} color="#ef4444" />
       </TouchableOpacity>
-    </TouchableOpacity>
+    </View>
   );
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>History</Text>
-        <Text style={styles.count}>{conversations.length} conversations</Text>
-      </View>
-      
+      <MenuBar />
       <FlatList
         data={conversations}
         renderItem={renderItem}
@@ -61,20 +56,18 @@ export default function HistoryScreen() {
           <View style={styles.empty}>
             <Ionicons name="time-outline" size={48} color="#262626" />
             <Text style={styles.emptyText}>No conversations yet</Text>
-            <Text style={styles.emptySubtext}>Start chatting to see history here</Text>
+            <Text style={styles.emptySubtext}>Start chatting to see history</Text>
           </View>
         }
       />
+      <NavBar />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderBottomWidth: 1, borderBottomColor: '#262626' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
-  count: { color: '#666', fontSize: 12 },
-  list: { padding: 16 },
+  list: { padding: 16, paddingTop: 70, paddingBottom: 100 },
   empty: { alignItems: 'center', marginTop: 100 },
   emptyText: { color: '#666', fontSize: 16, marginTop: 12 },
   emptySubtext: { color: '#444', fontSize: 13, marginTop: 4 },

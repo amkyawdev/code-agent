@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 
 import { Ionicons } from '@expo/vector-icons';
 import { useAPI } from '@/contexts/APIContext';
 import { useHistory } from '@/contexts/HistoryContext';
+import MenuBar from '@/components/MenuBar';
+import NavBar from '@/components/NavBar';
 
 interface Message {
   id: string;
@@ -45,7 +47,6 @@ Respond with code and commands.`;
 
   const handleSend = async () => {
     if (!taskInput.trim() || isLoading) return;
-    
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: taskInput.trim() };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -56,8 +57,6 @@ Respond with code and commands.`;
       const res = await callAI(taskInput.trim());
       const allMessages = [...newMessages, { id: (Date.now() + 1).toString(), role: 'assistant' as const, content: res }];
       setMessages(allMessages);
-
-      // Save to history
       if (allMessages.length >= 2) {
         saveConversation({
           title: newMessages[0].content.slice(0, 50),
@@ -74,10 +73,7 @@ Respond with code and commands.`;
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Coder</Text>
-        <View style={[styles.statusDot, { backgroundColor: isConfigured('gemini') || isConfigured('deepseek') ? '#22c55e' : '#ef4444' }]} />
-      </View>
+      <MenuBar />
       <ScrollView style={styles.chatArea} contentContainerStyle={styles.chatContent}>
         {messages.length === 0 && (
           <View style={styles.welcome}>
@@ -99,17 +95,15 @@ Respond with code and commands.`;
           <Ionicons name="send" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
+      <NavBar />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderBottomWidth: 1, borderBottomColor: '#262626' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#fff' },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
   chatArea: { flex: 1 },
-  chatContent: { padding: 16, paddingBottom: 100 },
+  chatContent: { padding: 16, paddingTop: 70, paddingBottom: 100 },
   welcome: { alignItems: 'center', paddingTop: 60 },
   welcomeTitle: { fontSize: 24, fontWeight: 'bold', color: '#fff', marginTop: 16 },
   welcomeText: { color: '#a3a3a3', fontSize: 14 },
@@ -117,7 +111,7 @@ const styles = StyleSheet.create({
   userMsg: { backgroundColor: '#6366f1', marginLeft: 40 },
   aiMsg: { backgroundColor: '#1a1a1a', marginRight: 40, borderWidth: 1, borderColor: '#262626' },
   msgText: { color: '#fff', fontSize: 14, lineHeight: 22 },
-  inputArea: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', padding: 12, backgroundColor: '#1a1a1a', borderTopWidth: 1, borderTopColor: '#262626', gap: 8 },
+  inputArea: { flexDirection: 'row', alignItems: 'center', padding: 12, backgroundColor: '#1a1a1a', borderTopWidth: 1, borderTopColor: '#262626', gap: 8 },
   input: { flex: 1, backgroundColor: '#0a0a0a', padding: 12, borderRadius: 20, color: '#fff', fontSize: 15, maxHeight: 80 },
   sendBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#6366f1', justifyContent: 'center', alignItems: 'center' },
 });
