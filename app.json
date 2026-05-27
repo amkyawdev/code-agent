@@ -14,29 +14,24 @@
     "assetBasePath": "./assets/",
     "extra": {
       "eas": {
-        "projectId": "coder-agent-54bb7"
+        "projectId": "amk-apk"
       },
       "firebase": {
-        "projectId": "coder-agent-54bb7",
-        "storageBucket": "coder-agent-54bb7.firebasestorage.app"
+        "projectId": "amk-apk",
+        "storageBucket": "amk-apk.firebasestorage.app",
+        "firebaseUrl": "https://amk-apk-default-rtdb.firebaseio.com"
       }
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.amkyawdev.codeagent",
-      "config": {
-        "googleMobileAdsAppId": "ca-app-pub-xxxxx~xxxxx"
-      }
+      "bundleIdentifier": "com.amkyawdev.codeagent"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0a0a0a"
       },
-      "package": "com.amkyaw.codeagent",
-      "config": {
-        "googleMobileAdsAppId": "ca-app-pub-xxxxx~xxxxx"
-      },
+      "package": "com.aungmyokyaw.sever",
       "versionCode": 1
     },
     "web": {
